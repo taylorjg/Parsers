@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Text.RegularExpressions;
-using MonadLib;
 
 namespace ParsersLib
 {
-    using EitherParseError = Either<ParseError>;
-
     public class MyParser : ParsersBase
     {
-        public override Either<ParseError, TA> Run<TA>(Parser<TA> p, string input)
+        public override Result<TA> Run<TA>(Parser<TA> p, string input)
         {
-            return p.Run(input);
+            return p.Run(new Location(input));
         }
 
         public override Parser<string> String(string s)
         {
             return new Parser<string>(
-                input => input.StartsWith(s)
-                             ? EitherParseError.Right(s)
-                             : EitherParseError.Left<string>(new Location(input).ToError("Expected: {0}", s)));
+                location => location.Input.StartsWith(s)
+                                ? new Success<string>(s, s.Length) as Result<string>
+                                : new Failure<string>(location.ToError("Expected: {0}", s)));
         }
 
         public override Parser<string> Regex(Regex r)

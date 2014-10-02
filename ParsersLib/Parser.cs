@@ -1,22 +1,21 @@
 ﻿using System;
-using MonadLib;
 
 namespace ParsersLib
 {
-    // This will class become a monad eventually ?
+    // Will this class become a monad eventually ?
 
     public class Parser<TA>
     {
-        private readonly Func<string, Either<ParseError, TA>> _runFunc;
+        private readonly Func<Location, Result<TA>> _runFunc;
 
-        public Parser(Func<string, Either<ParseError, TA>> runFunc)
+        public Parser(Func<Location, Result<TA>> runFunc)
         {
             _runFunc = runFunc;
         }
 
-        public Either<ParseError, TA> Run(string input)
+        public Result<TA> Run(Location location)
         {
-            return _runFunc(input);
+            return _runFunc(location);
         }
     }
 }
