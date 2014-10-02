@@ -6,16 +6,9 @@ using MonadLib;
 
 namespace ParsersLib
 {
-    // This will class become a monad eventually ?
-    // ReSharper disable UnusedTypeParameter
-    public class Parser<TA>
-    // ReSharper restore UnusedTypeParameter
+    public abstract class ParsersBase
     {
-    }
-
-    public abstract class Parsers<TParseError>
-    {
-        public abstract Either<TParseError, TA> Run<TA>(Parser<TA> p, string input);
+        public abstract Either<ParseError, TA> Run<TA>(Parser<TA> p, string input);
 
         // Primitives
         public abstract Parser<string> String(string s);
@@ -24,6 +17,7 @@ namespace ParsersLib
         public abstract Parser<TA> Succeed<TA>(TA a);
         public abstract Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f);
         public abstract Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func);
+        public abstract Parser<TA> Label<TA>(string messae, Parser<TA> p); 
 
         // Combinators
         public Parser<char> Char(char c)
