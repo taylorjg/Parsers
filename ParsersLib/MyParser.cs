@@ -50,5 +50,15 @@ namespace ParsersLib
         {
             throw new NotImplementedException();
         }
+
+        public override Parser<TA> Scope<TA>(string messae, Parser<TA> p)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Parser<TA> Attempt<TA>(Parser<TA> p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

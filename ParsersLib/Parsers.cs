@@ -18,6 +18,8 @@ namespace ParsersLib
         public abstract Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f);
         public abstract Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func);
         public abstract Parser<TA> Label<TA>(string messae, Parser<TA> p); 
+        public abstract Parser<TA> Scope<TA>(string messae, Parser<TA> p); 
+        public abstract Parser<TA> Attempt<TA>(Parser<TA> p); 
 
         // Combinators
         public Parser<char> Char(char c)
