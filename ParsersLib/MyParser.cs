@@ -13,14 +13,40 @@ namespace ParsersLib
         public override Parser<string> String(string s)
         {
             return new Parser<string>(
-                location => location.Input.StartsWith(s)
-                                ? new Success<string>(s, s.Length) as Result<string>
-                                : new Failure<string>(location.ToError("Expected: {0}", s)));
+                l => l.Input.StartsWith(s)
+                         ? new Success<string>(s, s.Length) as Result<string>
+                         : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s)));
         }
 
         public override Parser<string> Regex(Regex r)
         {
-            throw new NotImplementedException();
+            return new Parser<string>(
+                l =>
+                    {
+                        var match = r.Match(l.Input);
+                        if (match.Success)
+                        {
+                            var a = match.Value;
+                            return new Success<string>(a, a.Length);
+                        }
+                        return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r));
+                    });
+        }
+
+        public override Parser<string> Regex(string s)
+        {
+            return new Parser<string>(
+                l =>
+                    {
+                        var r = new Regex(s);
+                        var match = r.Match(l.Input);
+                        if (match.Success)
+                        {
+                            var a = match.Value;
+                            return new Success<string>(a, a.Length);
+                        }
+                        return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r));
+                    });
         }
 
         public override Parser<string> Slice<TA>(Parser<TA> p)
