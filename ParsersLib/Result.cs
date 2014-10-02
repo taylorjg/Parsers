@@ -1,10 +1,26 @@
-﻿namespace ParsersLib
+﻿using System;
+
+namespace ParsersLib
 {
-    // ReSharper disable UnusedTypeParameter
     public class Result<TA>
     {
+        public Result<TB> Match<TB>(Func<Success<TA>, Result<TB>> successFunc, Func<Failure<TA>, Result<TB>> failureFunc)
+        {
+            if (this is Success<TA>)
+            {
+                var success = this as Success<TA>;
+                return successFunc(success);
+            }
+
+            if (this is Failure<TA>)
+            {
+                var failure = this as Failure<TA>;
+                return failureFunc(failure);
+            }
+
+            throw new Exception("'this' is neither Success nor Failure!");
+        }
     }
-    // ReSharper restore UnusedTypeParameter
 
     public class Success<TA> : Result<TA>
     {

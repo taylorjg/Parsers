@@ -51,12 +51,14 @@ namespace ParsersLib
 
         public override Parser<string> Slice<TA>(Parser<TA> p)
         {
-            throw new NotImplementedException();
+            return new Parser<string>(l => p.Run(l).Match(
+                success => new Success<string>(l.Input.Substring(0, success.CharsConsumed), success.CharsConsumed),
+                failure => new Failure<string>(failure.ParseError)));
         }
 
         public override Parser<TA> Succeed<TA>(TA a)
         {
-            throw new NotImplementedException();
+            return new Parser<TA>(l => new Success<TA>(a, 0));
         }
 
         public override Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f)
