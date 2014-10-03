@@ -52,7 +52,9 @@ namespace ParsersLib
 
         public override Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func)
         {
-            throw new NotImplementedException();
+            return new Parser<TA>(l => p1.Run(l).Match(
+                success => success,
+                failure => failure.IsCommitted ? failure : p2Func().Run(l)));
         }
 
         public override Parser<TA> Label<TA>(string message, Parser<TA> p)
@@ -67,7 +69,7 @@ namespace ParsersLib
 
         public override Parser<TA> Attempt<TA>(Parser<TA> p)
         {
-            throw new NotImplementedException();
+            return new Parser<TA>(l => p.Run(l).Uncommit());
         }
     }
 }

@@ -27,6 +27,13 @@ namespace ParsersLib
                 success => success,
                 failure => new Failure<TA>(f(failure.ParseError)));
         }
+
+        public Result<TA> Uncommit()
+        {
+            return Match(
+                success => success,
+                failure => new Failure<TA>(failure.ParseError, false));
+        }
     }
 
     public class Success<TA> : Result<TA>
@@ -44,11 +51,12 @@ namespace ParsersLib
     public class Failure<TA> : Result<TA>
     {
         public ParseError ParseError { get; private set; }
+        public bool IsCommitted { get; private set; }
 
-        public Failure(ParseError parseError)
+        public Failure(ParseError parseError, bool isCommitted = true)
         {
             ParseError = parseError;
+            IsCommitted = isCommitted;
         }
     }
-
 }
