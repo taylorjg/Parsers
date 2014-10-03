@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{554BF9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersLib", "ParsersLib\ParsersLib.csproj", "{ACC7BC41-ED71-4191-800A-DE9A1F2E1341}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParsersApp", "ParsersApp\ParsersApp.csproj", "{AFF724EE-D576-4FE7-A3C7-79B2970A77FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{ACC7BC41-ED71-4191-800A-DE9A1F2E1341}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACC7BC41-ED71-4191-800A-DE9A1F2E1341}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACC7BC41-ED71-4191-800A-DE9A1F2E1341}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFF724EE-D576-4FE7-A3C7-79B2970A77FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFF724EE-D576-4FE7-A3C7-79B2970A77FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFF724EE-D576-4FE7-A3C7-79B2970A77FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFF724EE-D576-4FE7-A3C7-79B2970A77FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

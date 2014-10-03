@@ -25,13 +25,16 @@ namespace ParsersLib
                        : new ParseError(Enumerable.Empty<Tuple<Location, string>>());
         }
 
-        private Location LatestLocation {
+        // Could return Maybe<Location> here.
+        private Location LatestLocation
+        {
             get
             {
                 return Latest != null ? Latest.Item1 : null;
             }
         }
 
+        // Could return Maybe<Tuple<Location, string>> here.
         private Tuple<Location, string> Latest {
             get { return Stack.LastOrDefault(); }
         }

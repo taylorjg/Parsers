@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace ParsersLib
 {
@@ -60,6 +61,11 @@ namespace ParsersLib
             Value = value;
             CharsConsumed = charsConsumed;
         }
+
+        public override string ToString()
+        {
+            return string.Format("Success - Value: {0}, CharsConsumed: {1}", Value, CharsConsumed);
+        }
     }
 
     public class Failure<TA> : Result<TA>
@@ -71,6 +77,17 @@ namespace ParsersLib
         {
             ParseError = parseError;
             IsCommitted = isCommitted;
+        }
+
+        public override string ToString()
+        {
+            var tuple = ParseError.Stack.First();
+            if (tuple == null) return "Failure";
+            var location = tuple.Item1;
+            var message = tuple.Item2;
+            var line = location.Line;
+            var column = location.Column;
+            return string.Format("Failure - message: {0}, line: {1}, column: {2}", message, line, column);
         }
     }
 }
