@@ -12,7 +12,6 @@ namespace ParsersLib
         // Primitives
         public abstract Parser<string> String(string s);
         public abstract Parser<string> Regex(Regex r);
-        public abstract Parser<string> Regex(string s);
         public abstract Parser<string> Slice<TA>(Parser<TA> p);
         public abstract Parser<TA> Succeed<TA>(TA a);
         public abstract Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f);

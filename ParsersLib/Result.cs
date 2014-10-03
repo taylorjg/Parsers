@@ -20,6 +20,13 @@ namespace ParsersLib
 
             throw new Exception("'this' is neither Success nor Failure!");
         }
+
+        public Result<TA> MapError(Func<ParseError, ParseError> f)
+        {
+            return Match(
+                success => success,
+                failure => new Failure<TA>(f(failure.ParseError)));
+        }
     }
 
     public class Success<TA> : Result<TA>
@@ -43,4 +50,5 @@ namespace ParsersLib
             ParseError = parseError;
         }
     }
+
 }

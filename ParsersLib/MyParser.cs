@@ -33,22 +33,6 @@ namespace ParsersLib
                     });
         }
 
-        public override Parser<string> Regex(string s)
-        {
-            return new Parser<string>(
-                l =>
-                    {
-                        var r = new Regex(s);
-                        var match = r.Match(l.Input);
-                        if (match.Success)
-                        {
-                            var a = match.Value;
-                            return new Success<string>(a, a.Length);
-                        }
-                        return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r));
-                    });
-        }
-
         public override Parser<string> Slice<TA>(Parser<TA> p)
         {
             return new Parser<string>(l => p.Run(l).Match(
@@ -71,14 +55,14 @@ namespace ParsersLib
             throw new NotImplementedException();
         }
 
-        public override Parser<TA> Label<TA>(string messae, Parser<TA> p)
+        public override Parser<TA> Label<TA>(string message, Parser<TA> p)
         {
-            throw new NotImplementedException();
+            return new Parser<TA>(l => p.Run(l).MapError(pe => pe.Label(message)));
         }
 
-        public override Parser<TA> Scope<TA>(string messae, Parser<TA> p)
+        public override Parser<TA> Scope<TA>(string message, Parser<TA> p)
         {
-            throw new NotImplementedException();
+            return new Parser<TA>(l => p.Run(l).MapError(pe => pe.Push(l, message)));
         }
 
         public override Parser<TA> Attempt<TA>(Parser<TA> p)
