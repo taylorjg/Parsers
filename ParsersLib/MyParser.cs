@@ -36,7 +36,7 @@ namespace ParsersLib
 
         public override Parser<string> Slice<TA>(Parser<TA> p)
         {
-            return new Parser<string>(l => p.Run(l).Match(
+            return new Parser<string>(l => p.Run(l).MatchResult(
                 success => new Success<string>(l.Input.Substring(0, success.CharsConsumed), success.CharsConsumed),
                 failure => new Failure<string>(failure.ParseError)));
         }
@@ -48,7 +48,7 @@ namespace ParsersLib
 
         public override Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f)
         {
-            return new Parser<TB>(l => p.Run(l).Match(
+            return new Parser<TB>(l => p.Run(l).MatchResult(
                 success =>
                     {
                         var a = success.Value;
@@ -63,7 +63,7 @@ namespace ParsersLib
 
         public override Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func)
         {
-            return new Parser<TA>(l => p1.Run(l).Match(
+            return new Parser<TA>(l => p1.Run(l).MatchResult(
                 success => success,
                 failure => failure.IsCommitted ? failure : p2Func().Run(l)));
         }

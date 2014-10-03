@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MonadLib;
 
 namespace ParsersLib
 {
@@ -15,28 +16,38 @@ namespace ParsersLib
 
         public ParseError Push(Location location, string message)
         {
-            return new ParseError(Enumerable.Repeat(Tuple.Create(location, message), 1).Concat(Stack));
+            return new ParseError(ConsStack(location, message));
         }
 
         public ParseError Label(string message)
         {
-            return LatestLocation != null
-                       ? new ParseError(Enumerable.Repeat(Tuple.Create(LatestLocation, message), 1).Concat(Stack))
-                       : new ParseError(Enumerable.Empty<Tuple<Location, string>>());
+            return new ParseError(Maybe.MapOrDefault(
+                EmptyStack,
+                location => ConsStack(location, message),
+                LatestLocation));
         }
 
-        // Could return Maybe<Location> here.
-        private Location LatestLocation
+        private Maybe<Location> LatestLocation
+        {
+            get { return Latest.LiftM(l => l.Item1); }
+        }
+
+        private Maybe<Tuple<Location, string>> Latest
+        {
+            get { return Maybe.ListToMaybe(Stack.Reverse()); }
+        }
+
+        private IEnumerable<Tuple<Location, string>> ConsStack(Location location, string message)
+        {
+            return Enumerable.Repeat(Tuple.Create(location, message), 1).Concat(Stack);
+        }
+
+        private static IEnumerable<Tuple<Location, string>> EmptyStack
         {
             get
             {
-                return Latest != null ? Latest.Item1 : null;
+                return Enumerable.Empty<Tuple<Location, string>>();
             }
-        }
-
-        // Could return Maybe<Tuple<Location, string>> here.
-        private Tuple<Location, string> Latest {
-            get { return Stack.LastOrDefault(); }
         }
     }
 }

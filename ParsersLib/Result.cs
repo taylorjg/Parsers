@@ -6,23 +6,6 @@ namespace ParsersLib
 {
     public class Result<TA>
     {
-        public Result<TB> Match<TB>(Func<Success<TA>, Result<TB>> successFunc, Func<Failure<TA>, Result<TB>> failureFunc)
-        {
-            if (this is Success<TA>)
-            {
-                var success = this as Success<TA>;
-                return successFunc(success);
-            }
-
-            if (this is Failure<TA>)
-            {
-                var failure = this as Failure<TA>;
-                return failureFunc(failure);
-            }
-
-            throw new Exception("'this' is neither Success nor Failure!");
-        }
-
         public TB Match<TB>(Func<Success<TA>, TB> successFunc, Func<Failure<TA>, TB> failureFunc)
         {
             if (this is Success<TA>)
@@ -40,30 +23,35 @@ namespace ParsersLib
             throw new Exception("'this' is neither Success nor Failure!");
         }
 
+        public Result<TB> MatchResult<TB>(Func<Success<TA>, Result<TB>> successFunc, Func<Failure<TA>, Result<TB>> failureFunc)
+        {
+            return Match(successFunc, failureFunc);
+        }
+
         public Result<TA> MapError(Func<ParseError, ParseError> f)
         {
-            return Match(
+            return MatchResult(
                 success => success,
                 failure => new Failure<TA>(f(failure.ParseError)));
         }
 
         public Result<TA> Uncommit()
         {
-            return Match(
+            return MatchResult(
                 success => success,
                 failure => new Failure<TA>(failure.ParseError, false));
         }
 
         public Result<TA> AddCommit(bool isCommitted)
         {
-            return Match(
+            return MatchResult(
                 success => success,
                 failure => new Failure<TA>(failure.ParseError, failure.IsCommitted || isCommitted));
         }
 
         public Result<TA> AdvanceSuccess(int n)
         {
-            return Match(
+            return MatchResult(
                 success => new Success<TA>(success.Value, success.CharsConsumed + n), 
                 failure => failure);
         }
