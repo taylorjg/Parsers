@@ -25,14 +25,14 @@ namespace ParsersLib
                        : new ParseError(Enumerable.Empty<Tuple<Location, string>>());
         }
 
-        public Location LatestLocation {
+        private Location LatestLocation {
             get
             {
                 return Latest != null ? Latest.Item1 : null;
             }
         }
 
-        public Tuple<Location, string> Latest {
+        private Tuple<Location, string> Latest {
             get { return Stack.LastOrDefault(); }
         }
     }

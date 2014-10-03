@@ -43,5 +43,10 @@ namespace ParsersLib
             var message = string.Format(format, args);
             return new ParseError(new[] {Tuple.Create(this, message)});
         }
+
+        public Location AdvanceBy(int n)
+        {
+            return new Location(Input, Offset + n);
+        }
     }
 }

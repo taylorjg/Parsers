@@ -34,6 +34,20 @@ namespace ParsersLib
                 success => success,
                 failure => new Failure<TA>(failure.ParseError, false));
         }
+
+        public Result<TA> AddCommit(bool isCommitted)
+        {
+            return Match(
+                success => success,
+                failure => new Failure<TA>(failure.ParseError, failure.IsCommitted || isCommitted));
+        }
+
+        public Result<TA> AdvanceSuccess(int n)
+        {
+            return Match(
+                success => new Success<TA>(success.Value, success.CharsConsumed + n), 
+                failure => failure);
+        }
     }
 
     public class Success<TA> : Result<TA>

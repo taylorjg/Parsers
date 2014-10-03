@@ -9,6 +9,8 @@ namespace ParsersLib
     {
         public abstract Result<TA> Run<TA>(Parser<TA> p, string input);
 
+        // TODO: investigate possibility of using implicit re String, RegEx
+
         // Primitives
         public abstract Parser<string> String(string s);
         public abstract Parser<string> Regex(Regex r);

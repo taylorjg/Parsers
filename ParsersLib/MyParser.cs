@@ -47,7 +47,17 @@ namespace ParsersLib
 
         public override Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f)
         {
-            throw new NotImplementedException();
+            return new Parser<TB>(l => p.Run(l).Match(
+                success =>
+                    {
+                        var a = success.Value;
+                        var n = success.CharsConsumed;
+                        var p2 = f(a);
+                        return p2.Run(l.AdvanceBy(n))
+                                 .AddCommit(n > 0)
+                                 .AdvanceSuccess(n);
+                    },
+                failure => new Failure<TB>(failure.ParseError, failure.IsCommitted)));
         }
 
         public override Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func)
