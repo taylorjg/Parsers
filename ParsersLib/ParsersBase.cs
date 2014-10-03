@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using MonadLib;
 
 namespace ParsersLib
 {
     public abstract class ParsersBase
     {
-        public abstract Result<TA> Run<TA>(Parser<TA> p, string input);
+        public abstract Either<ParseError, TA> Run<TA>(Parser<TA> p, string input);
 
         // TODO: investigate possibility of using implicit re String, RegEx
 

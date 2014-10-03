@@ -1,11 +1,29 @@
 ﻿using System;
 using System.Linq;
+using MonadLib;
 
 namespace ParsersLib
 {
     public class Result<TA>
     {
         public Result<TB> Match<TB>(Func<Success<TA>, Result<TB>> successFunc, Func<Failure<TA>, Result<TB>> failureFunc)
+        {
+            if (this is Success<TA>)
+            {
+                var success = this as Success<TA>;
+                return successFunc(success);
+            }
+
+            if (this is Failure<TA>)
+            {
+                var failure = this as Failure<TA>;
+                return failureFunc(failure);
+            }
+
+            throw new Exception("'this' is neither Success nor Failure!");
+        }
+
+        public TB Match<TB>(Func<Success<TA>, TB> successFunc, Func<Failure<TA>, TB> failureFunc)
         {
             if (this is Success<TA>)
             {
@@ -48,6 +66,13 @@ namespace ParsersLib
             return Match(
                 success => new Success<TA>(success.Value, success.CharsConsumed + n), 
                 failure => failure);
+        }
+
+        public Either<ParseError, TA> Extract()
+        {
+            return Match(
+                success => Either<ParseError>.Right(success.Value),
+                failure => Either<ParseError>.Left<TA>(failure.ParseError));
         }
     }
 

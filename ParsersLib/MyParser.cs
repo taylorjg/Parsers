@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using MonadLib;
 
 namespace ParsersLib
 {
     public class MyParser : ParsersBase
     {
-        public override Result<TA> Run<TA>(Parser<TA> p, string input)
+        public override Either<ParseError, TA> Run<TA>(Parser<TA> p, string input)
         {
-            return p.Run(new Location(input));
+            return p.Run(new Location(input)).Extract();
         }
 
         public override Parser<string> String(string s)
