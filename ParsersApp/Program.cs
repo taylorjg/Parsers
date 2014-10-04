@@ -9,10 +9,14 @@ namespace ParsersApp
     {
         private static void Main( /* string[] args */)
         {
-            var myParser = new MyParser();
-            PrintResult(myParser.Run(myParser.Char('c'), "c"));
-            PrintResult(myParser.Run(myParser.String("abc"), "abc"));
-            PrintResult(myParser.Run(myParser.Regex(new Regex(@"\dabc\d")), "5abc6"));
+            var p = new MyParser();
+            PrintResult(p.Run(p.Char('c'), "c"));
+            PrintResult(p.Run(p.String("abc"), "abcdefg"));
+            PrintResult(p.Run(p.Slice(p.String("abc")), "abcdefg"));
+            PrintResult(p.Run(p.Regex(new Regex(@"\dabc\d")), "5abc6"));
+            PrintResult(p.Run(p.Double(), "12.4"));
+            PrintResult(p.Run(p.Eof(), ""));
+            PrintResult(p.Run(p.Eof(), "abc"));
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> either)

@@ -10,8 +10,6 @@ namespace ParsersLib
     {
         public abstract Either<ParseError, TA> Run<TA>(Parser<TA> p, string input);
 
-        // TODO: investigate possibility of using implicit re String, RegEx
-
         // Primitives
         public abstract Parser<string> String(string s);
         public abstract Parser<string> Regex(Regex r);
@@ -19,8 +17,8 @@ namespace ParsersLib
         public abstract Parser<TA> Succeed<TA>(TA a);
         public abstract Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f);
         public abstract Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func);
-        public abstract Parser<TA> Label<TA>(string messae, Parser<TA> p); 
-        public abstract Parser<TA> Scope<TA>(string messae, Parser<TA> p); 
+        public abstract Parser<TA> Label<TA>(string message, Parser<TA> p); 
+        public abstract Parser<TA> Scope<TA>(string message, Parser<TA> p); 
         public abstract Parser<TA> Attempt<TA>(Parser<TA> p); 
 
         // Combinators
@@ -63,9 +61,61 @@ namespace ParsersLib
                        : Map2(p, () => ListOfN(n - 1, p), Cons);
         }
 
+        public Parser<TB> SkipL<TA, TB>(Parser<TA> p1, Func<Parser<TB>> p2Func)
+        {
+            return Map2(Slice(p1), p2Func, (_, b) => b);
+        }
+
+        public Parser<TA> SkipR<TA, TB>(Parser<TA> p1, Func<Parser<TB>> p2Func)
+        {
+            return Map2(p1, () => Slice(p2Func()), (a, _) => a);
+        }
+
+        public Parser<Maybe<TA>> Opt<TA>(Parser<TA> p)
+        {
+            var p1 = Map(p, Maybe.Just);
+            var p2 = Succeed(Maybe.Nothing<TA>());
+            return Or(p1, () => p2);
+        }
+
+        public Parser<string> Whitespace()
+        {
+            return R(@"\s*");
+        }
+
+        public Parser<string> Digits()
+        {
+            return R(@"\d+");
+        }
+
+        public Parser<TA> Token<TA>(Parser<TA> p)
+        {
+            return SkipR(Attempt(p), Whitespace);
+        }
+
+        public Parser<string> DoubleString()
+        {
+            return Token(R(@"[-+]?([0-9]*\.)?[0-9]+([eE][-+]?[0-9]+)?"));
+        }
+
+        public Parser<double> Double()
+        {
+            return Label("double literal", Map(DoubleString(), Convert.ToDouble));
+        }
+
+        public Parser<string> Eof()
+        {
+            return Label("unexpected trailing characters", R(@"\z"));
+        }
+
         private static IEnumerable<T> Cons<T>(T x, IEnumerable<T> xs)
         {
             return Enumerable.Repeat(x, 1).Concat(xs);
+        }
+
+        private Parser<string> R(string pattern)
+        {
+            return Regex(new Regex(pattern));
         }
     }
 }

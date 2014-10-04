@@ -21,10 +21,8 @@ namespace ParsersLib
 
         public ParseError Label(string message)
         {
-            return new ParseError(Maybe.MapOrDefault(
-                EmptyStack,
-                location => ConsStack(location, message),
-                LatestLocation));
+            return new ParseError(LatestLocation.LiftM(location => Tuple.Create(location, message))
+                                                .ToEnumerable());
         }
 
         private Maybe<Location> LatestLocation
@@ -39,15 +37,8 @@ namespace ParsersLib
 
         private IEnumerable<Tuple<Location, string>> ConsStack(Location location, string message)
         {
-            return Enumerable.Repeat(Tuple.Create(location, message), 1).Concat(Stack);
-        }
-
-        private static IEnumerable<Tuple<Location, string>> EmptyStack
-        {
-            get
-            {
-                return Enumerable.Empty<Tuple<Location, string>>();
-            }
+            return Enumerable.Repeat(Tuple.Create(location, message), 1)
+                             .Concat(Stack);
         }
     }
 }
