@@ -24,6 +24,7 @@ namespace ParsersApp
             PrintResult(p.Run(p.SkipR(p.String("abc"), p.Whitespace), "abc  "));
             PrintResult(p.Run(p.Surround(p.Char('['), p.Char(']'), p.String("abc")), "[abc]"));
             PrintResult(p.Run(p.Root(p.String("abc")), "abcblah"));
+            PrintResult(p.Run(p.Quoted(), "\"abc\""));
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> either)

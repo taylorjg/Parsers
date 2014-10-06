@@ -123,6 +123,16 @@ namespace ParsersLib
             return SkipR(SkipL(start, () => p), () => stop);
         }
 
+        public Parser<string> Thru(string s)
+        {
+            return R(@".*?" + System.Text.RegularExpressions.Regex.Escape(s));
+        }
+
+        public Parser<string> Quoted()
+        {
+            return Map(SkipL(String("\""), () => Thru("\"")), s => s.Substring(0, s.Length - 1));
+        }
+
         public Parser<TA> Root<TA>(Parser<TA> p)
         {
             return SkipR(p, Eof);
