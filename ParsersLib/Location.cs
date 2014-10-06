@@ -18,7 +18,7 @@ namespace ParsersLib
         {
             get
             {
-                return Input.Substring(0, Offset + 2).Count(x => x == '\n');
+                return Input.Substring(0, Offset + 1).Count(x => x == '\n');
             }
         }
 
@@ -26,7 +26,7 @@ namespace ParsersLib
         {
             get
             {
-                var lineStart = Input.Substring(0, Offset + 2).LastIndexOf('\n');
+                var lineStart = Input.Substring(0, Offset + 1).LastIndexOf('\n');
                 switch (lineStart)
                 {
                     case -1:

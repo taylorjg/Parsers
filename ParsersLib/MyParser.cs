@@ -14,7 +14,7 @@ namespace ParsersLib
         public override Parser<string> String(string s)
         {
             return new Parser<string>(
-                l => l.Input.StartsWith(s)
+                l => l.Input.Substring(l.Offset).StartsWith(s)
                          ? new Success<string>(s, s.Length) as Result<string>
                          : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s)));
         }
@@ -24,7 +24,7 @@ namespace ParsersLib
             return new Parser<string>(
                 l =>
                     {
-                        var match = r.Match(l.Input);
+                        var match = r.Match(l.Input.Substring(l.Offset));
                         if (match.Success)
                         {
                             var a = match.Value;

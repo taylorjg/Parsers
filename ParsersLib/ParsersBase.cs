@@ -108,6 +108,26 @@ namespace ParsersLib
             return Label("unexpected trailing characters", R(@"^\z"));
         }
 
+        public Parser<IEnumerable<TA>> Sep1<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        {
+            return Map2(p1, () => Many(SkipL(p2, () => p1)), Cons);
+        }
+
+        public Parser<IEnumerable<TA>> Sep<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        {
+            return Or(Sep1(p1, p2), () => Succeed(Enumerable.Empty<TA>()));
+        }
+
+        public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop, Parser<TA> p)
+        {
+            return SkipR(SkipL(start, () => p), () => stop);
+        }
+
+        public Parser<TA> Root<TA>(Parser<TA> p)
+        {
+            return SkipR(p, Eof);
+        }
+
         private static IEnumerable<T> Cons<T>(T x, IEnumerable<T> xs)
         {
             return Enumerable.Repeat(x, 1).Concat(xs);
