@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using MonadLib;
 
 namespace ParsersLib
@@ -39,6 +40,20 @@ namespace ParsersLib
         {
             return Enumerable.Repeat(Tuple.Create(location, message), 1)
                              .Concat(Stack);
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            var stack = Stack.ToList();
+            for (var index = 0; index < stack.Count; index++)
+            {
+                var tuple = stack[index];
+                sb.AppendFormat("{0} (line {1}, column {2})", tuple.Item2, tuple.Item1.Line, tuple.Item1.Column);
+                var isLastElement = index == stack.Count - 1;
+                if (!isLastElement) sb.AppendLine();
+            }
+            return sb.ToString();
         }
     }
 }

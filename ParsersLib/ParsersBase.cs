@@ -105,7 +105,7 @@ namespace ParsersLib
 
         public Parser<string> Eof()
         {
-            return Label("unexpected trailing characters", R(@"\z"));
+            return Label("unexpected trailing characters", R(@"^\z"));
         }
 
         private static IEnumerable<T> Cons<T>(T x, IEnumerable<T> xs)
