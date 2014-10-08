@@ -32,14 +32,14 @@ namespace ParsersLib
             return FlatMap(p, a => Succeed(f(a)));
         }
 
-        public Parser<TC> Map2<TA, TB, TC>(Parser<TA> p1, Func<Parser<TB>> p2, Func<TA, TB, TC> f)
+        public Parser<TC> Map2<TA, TB, TC>(Parser<TA> p1, Func<Parser<TB>> p2Func, Func<TA, TB, TC> f)
         {
-            return FlatMap(p1, a => Map(p2(), b => f(a, b)));
+            return FlatMap(p1, a => Map(p2Func(), b => f(a, b)));
         }
 
-        public Parser<Tuple<TA, TB>> Product<TA, TB>(Parser<TA> p1, Func<Parser<TB>> p2)
+        public Parser<Tuple<TA, TB>> Product<TA, TB>(Parser<TA> p1, Func<Parser<TB>> p2Func)
         {
-            return FlatMap(p1, a => Map(p2(), b => Tuple.Create(a, b)));
+            return FlatMap(p1, a => Map(p2Func(), b => Tuple.Create(a, b)));
         }
 
         public Parser<IEnumerable<TA>> Many<TA>(Parser<TA> p)
@@ -95,7 +95,7 @@ namespace ParsersLib
 
         public Parser<string> DoubleString()
         {
-            return Token(R(@"[-+]?([0-9]*\.)?[0-9]+([eE][-+]?[0-9]+)?"));
+            return Token(R(@"^[-+]?([0-9]*\.)?[0-9]+([eE][-+]?[0-9]+)?"));
         }
 
         public Parser<double> Double()
@@ -118,7 +118,7 @@ namespace ParsersLib
             return Or(Sep1(p1, p2), () => Succeed(Enumerable.Empty<TA>()));
         }
 
-        public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop,Func<Parser<TA>> pFunc)
+        public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop, Func<Parser<TA>> pFunc)
         {
             return SkipR(SkipL(start, pFunc), () => stop);
         }

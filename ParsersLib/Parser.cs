@@ -41,9 +41,9 @@ namespace ParsersLib
             return _parsersBase.Slice(this);
         }
 
-        public Parser<Tuple<TA, TB>> Product<TB>(Func<Parser<TB>> p2)
+        public Parser<Tuple<TA, TB>> Product<TB>(Func<Parser<TB>> p2Func)
         {
-            return _parsersBase.Product(this, p2);
+            return _parsersBase.Product(this, p2Func);
         }
 
         public Parser<TB> FlatMap<TB>(Func<TA, Parser<TB>> f)
@@ -61,14 +61,14 @@ namespace ParsersLib
             return _parsersBase.Scope(message, this);
         }
 
-        public Parser<TA> SkipL<TB>(Parser<TB> pStuffToSkip)
+        public Parser<TB> SkipL<TB>(Func<Parser<TB>> p2Func)
         {
-            return _parsersBase.SkipL(pStuffToSkip, () => this);
+            return _parsersBase.SkipL(this, p2Func);
         }
 
-        public Parser<TA> SkipR<TB>(Func<Parser<TB>> pStuffToSkipFunc)
+        public Parser<TA> SkipR<TB>(Func<Parser<TB>> p2Func)
         {
-            return _parsersBase.SkipR(this, pStuffToSkipFunc);
+            return _parsersBase.SkipR(this, p2Func);
         }
 
         public Parser<TA> Token()

@@ -14,10 +14,13 @@ namespace ParsersApp
             ParseSimpleThingsThatShouldFail();
 
             ParseJsonLiteral();
-            ParseJsonKeyValue();
+            ParseJsonKeyValueWithSimpleValues();
+            ParseJsonKeyValueWithArrayValue();
+            ParseJsonKeyValueWithObjectValue();
             ParseJsonArray();
             ParseJsonObjectWithSimpleValues();
-            ParseJsonObjectWithAnObjectValue();
+            ParseJsonObjectWithAnArrayProperty();
+            ParseJsonObjectWithANestedObject();
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> either)
@@ -65,7 +68,7 @@ namespace ParsersApp
 
         private static Parser<Tuple<string, Json>> JsonKeyValue(ParsersBase p)
         {
-            return p.Quoted().Product(() => JsonValue(p).SkipL(p.String(":")));
+            return p.Quoted().Product(() => p.SkipL(p.String(":"), () => JsonValue(p)));
         }
 
         private static Parser<Json> JsonArray(ParsersBase p)
@@ -73,7 +76,7 @@ namespace ParsersApp
             return p.Surround(
                 p.Char('['),
                 p.Char(']'),
-                () => JsonLiteral(p).Sep(p.String(",")))
+                () => JsonValue(p).Sep(p.String(",")))
                     .Map(vs => new JArray(vs) as Json)
                     .Scope("array");
         }
@@ -105,7 +108,7 @@ namespace ParsersApp
             PrintResult(p.Run(jsonLiteral, "false"));
         }
 
-        private static void ParseJsonKeyValue()
+        private static void ParseJsonKeyValueWithSimpleValues()
         {
             var p = new MyParserImpl();
             var jsonKeyValue = JsonKeyValue(p);
@@ -115,6 +118,22 @@ namespace ParsersApp
             PrintResult(p.Run(jsonKeyValue, "\"name\":\"Jon\""));
             PrintResult(p.Run(jsonKeyValue, "\"enabled\":true"));
             PrintResult(p.Run(jsonKeyValue, "\"enabled\":false"));
+        }
+
+        private static void ParseJsonKeyValueWithArrayValue()
+        {
+            var p = new MyParserImpl();
+            var jsonKeyValue = JsonKeyValue(p);
+
+            PrintResult(p.Run(jsonKeyValue, "\"property1\":[1,2,3]"));
+        }
+
+        private static void ParseJsonKeyValueWithObjectValue()
+        {
+            var p = new MyParserImpl();
+            var jsonKeyValue = JsonKeyValue(p);
+
+            PrintResult(p.Run(jsonKeyValue, "\"property1\":{\"name\":null,\"age\":12}"));
         }
 
         private static void ParseJsonArray()
@@ -131,9 +150,18 @@ namespace ParsersApp
             var jsonObject = JsonObject(p);
 
             PrintResult(p.Run(jsonObject, "{\"property1\":1,\"property2\":null,\"property3\":12.4,\"property4\":true}"));
+            PrintResult(p.Run(jsonObject, "{\"property1\":1,\"property2\":null,\"property3\":true,\"property4\":12.4}"));
         }
 
-        private static void ParseJsonObjectWithAnObjectValue()
+        private static void ParseJsonObjectWithAnArrayProperty()
+        {
+            var p = new MyParserImpl();
+            var jsonObject = JsonObject(p);
+
+            PrintResult(p.Run(jsonObject, "{\"property1\":[1,2,3]}"));
+        }
+
+        private static void ParseJsonObjectWithANestedObject()
         {
             var p = new MyParserImpl();
             var jsonObject = JsonObject(p);
