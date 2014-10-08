@@ -28,12 +28,14 @@ namespace ParsersApp
             PrintResult(p.Run(p.Quoted(), "\"abc\""));
 
             {
-                var lit = p.Scope("literal",
-                                  p.Or(
-                                      p.As(p.String("null"), new JNull() as Json),
-                                      () => p.As(p.String("true"), new JBool(true) as Json)));
-                PrintResult(p.Run(lit, "null"));
-                PrintResult(p.Run(lit, "true"));
+                var jsonLiteral = p.Scope("literal",
+                    p.String("null").As(new JNull() as Json)
+                    .Or(() => p.String("true").As(new JBool(true) as Json))
+                    .Or(() => p.String("false").As(new JBool(false) as Json)));
+                PrintResult(p.Run(jsonLiteral, "null"));
+                PrintResult(p.Run(jsonLiteral, "true"));
+                PrintResult(p.Run(jsonLiteral, "false"));
+                PrintResult(p.Run(jsonLiteral, "bogus"));
             }
 
             {
