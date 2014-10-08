@@ -10,6 +10,7 @@ namespace ParsersApp
         private static void Main( /* string[] args */)
         {
             var p = new MyParser();
+
             PrintResult(p.Run(p.Char('c'), "c"));
             PrintResult(p.Run(p.Char('c'), "d"));
             PrintResult(p.Run(p.String("abc"), "abcdefg"));
@@ -25,6 +26,19 @@ namespace ParsersApp
             PrintResult(p.Run(p.Surround(p.Char('['), p.Char(']'), p.String("abc")), "[abc]"));
             PrintResult(p.Run(p.Root(p.String("abc")), "abcblah"));
             PrintResult(p.Run(p.Quoted(), "\"abc\""));
+
+            {
+                var lit = p.Scope("literal",
+                                  p.Or(
+                                      p.As(p.String("null"), new JNull() as Json),
+                                      () => p.As(p.String("true"), new JBool(true) as Json)));
+                PrintResult(p.Run(lit, "null"));
+                PrintResult(p.Run(lit, "true"));
+            }
+
+            {
+                //var result = p.Run(p.Surround(p.Char('{'), p.Char('}'), ???), "{}");
+            }
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> either)

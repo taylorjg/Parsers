@@ -16,7 +16,7 @@ namespace ParsersLib
             return new Parser<string>(
                 l => l.Input.Substring(l.Offset).StartsWith(s)
                          ? new Success<string>(s, s.Length) as Result<string>
-                         : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s)));
+                         : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s), false));
         }
 
         public override Parser<string> Regex(Regex r)
@@ -30,15 +30,15 @@ namespace ParsersLib
                             var a = match.Value;
                             return new Success<string>(a, a.Length);
                         }
-                        return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r));
+                        return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r), false);
                     });
         }
 
         public override Parser<string> Slice<TA>(Parser<TA> p)
         {
             return new Parser<string>(l => p.Run(l).MatchResult(
-                success => new Success<string>(l.Input.Substring(0, success.CharsConsumed), success.CharsConsumed),
-                failure => new Failure<string>(failure.ParseError)));
+                success => new Success<string>(l.Input.Substring(l.Offset, success.CharsConsumed), success.CharsConsumed),
+                failure => new Failure<string>(failure.ParseError, failure.IsCommitted)));
         }
 
         public override Parser<TA> Succeed<TA>(TA a)

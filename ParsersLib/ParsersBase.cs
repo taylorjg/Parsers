@@ -133,6 +133,11 @@ namespace ParsersLib
             return Map(SkipL(String("\""), () => Thru("\"")), s => s.Substring(0, s.Length - 1));
         }
 
+        public Parser<TB> As<TA, TB>(Parser<TA> p, TB b)
+        {
+            return Map(Slice(p), _ => b);
+        }
+
         public Parser<TA> Root<TA>(Parser<TA> p)
         {
             return SkipR(p, Eof);
