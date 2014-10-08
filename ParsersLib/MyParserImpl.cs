@@ -4,7 +4,7 @@ using MonadLib;
 
 namespace ParsersLib
 {
-    public class MyParser : ParsersBase
+    public class MyParserImpl : ParsersBase
     {
         public override Either<ParseError, TA> Run<TA>(Parser<TA> p, string input)
         {

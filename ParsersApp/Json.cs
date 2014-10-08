@@ -1,13 +1,17 @@
 ﻿using System.Collections.Generic;
 
-namespace ParsersLib
+namespace ParsersApp
 {
-    public class Json
+    public abstract class Json
     {
     }
 
     public class JNull : Json
     {
+        public override string ToString()
+        {
+            return "JNull";
+        }
     }
 
     public class JNumber : Json
@@ -18,15 +22,25 @@ namespace ParsersLib
         {
             Number = n;
         }
+
+        public override string ToString()
+        {
+            return string.Format("JNumber({0})", Number);
+        }
     }
 
     public class JString : Json
     {
-        public string S { get; private set; }
+        public string String { get; private set; }
 
         public JString(string s)
         {
-            S = s;
+            String = s;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("JString(\"{0}\")", String);
         }
     }
 
@@ -37,6 +51,11 @@ namespace ParsersLib
         public JBool(bool b)
         {
             Bool = b;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("JBool({0})", Bool ? "true" : "false");
         }
     }
 

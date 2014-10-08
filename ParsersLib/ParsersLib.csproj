@@ -47,9 +47,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Json.cs" />
     <Compile Include="Location.cs" />
-    <Compile Include="MyParser.cs" />
+    <Compile Include="MyParserImpl.cs" />
     <Compile Include="ParseError.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParsersBase.cs" />
