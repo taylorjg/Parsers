@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ParsersApp
 {
@@ -66,6 +67,11 @@ namespace ParsersApp
         public JArray(IEnumerable<Json> elements)
         {
             Elements = elements;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("JArray: [{0}]", string.Join(", ", Elements.Select(e => e.ToString())));
         }
     }
 

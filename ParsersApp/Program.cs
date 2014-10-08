@@ -84,13 +84,14 @@ namespace ParsersApp
         private static void ParseJsonObject()
         {
             var p = new MyParserImpl();
-
-            //var result = p.Run(p.Surround(p.Char('{'), p.Char('}'), ???), "{}");
         }
 
         private static void ParseJsonArray()
         {
             var p = new MyParserImpl();
+            var literal = Literal(p);
+            var array = p.Surround(p.Char('['), p.Char(']'), literal.Sep(p.String(","))).Map(vs => new JArray(vs));
+            PrintResult(p.Run(array, "[1,true,null,\"fred\"]"));
         }
     }
 }
