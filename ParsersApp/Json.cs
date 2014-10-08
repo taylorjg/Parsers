@@ -6,13 +6,24 @@ namespace ParsersApp
 {
     public abstract class Json
     {
+        protected string Padding(int level)
+        {
+            return new string(' ', level * 4);
+        }
+
+        public abstract string FormatString(int level);
     }
 
     public class JNull : Json
     {
+        public override string FormatString(int level)
+        {
+            return string.Format("JNull");
+        }
+
         public override string ToString()
         {
-            return "JNull";
+            return FormatString(0);
         }
     }
 
@@ -25,9 +36,14 @@ namespace ParsersApp
             Number = n;
         }
 
-        public override string ToString()
+        public override string FormatString(int level)
         {
             return string.Format("JNumber({0})", Number);
+        }
+
+        public override string ToString()
+        {
+            return FormatString(0);
         }
     }
 
@@ -40,9 +56,14 @@ namespace ParsersApp
             String = s;
         }
 
-        public override string ToString()
+        public override string FormatString(int level)
         {
             return string.Format("JString(\"{0}\")", String);
+        }
+
+        public override string ToString()
+        {
+            return FormatString(0);
         }
     }
 
@@ -55,9 +76,14 @@ namespace ParsersApp
             Bool = b;
         }
 
-        public override string ToString()
+        public override string FormatString(int level)
         {
             return string.Format("JBool({0})", Bool ? "true" : "false");
+        }
+
+        public override string ToString()
+        {
+            return FormatString(0);
         }
     }
 
@@ -70,14 +96,20 @@ namespace ParsersApp
             Elements = elements;
         }
 
-        public override string ToString()
+        public override string FormatString(int level)
         {
             var elementSeparator = "," + Environment.NewLine;
             return string.Format(
-                "JArray: [{0}{1}{2}]",
+                "JArray: [{0}{1}{2}{3}]",
                 Environment.NewLine,
-                string.Join(elementSeparator, Elements.Select(e => string.Format("    {0}", e.ToString()))),
-                Environment.NewLine);
+                string.Join(elementSeparator, Elements.Select(e => string.Format("{0}{1}", Padding(level + 1), e.FormatString(level + 1)))),
+                Environment.NewLine,
+                Padding(level));
+        }
+
+        public override string ToString()
+        {
+            return FormatString(0);
         }
     }
 
@@ -90,29 +122,20 @@ namespace ParsersApp
             KeyValues = keyValues;
         }
 
-        public override string ToString()
+        public override string FormatString(int level)
         {
             var elementSeparator = "," + Environment.NewLine;
             return string.Format(
-                "JObject: {{{0}{1}{2}}}",
+                "JObject: {{{0}{1}{2}{3}}}",
                 Environment.NewLine,
-                string.Join(elementSeparator, KeyValues.Select(kvp => string.Format("    \"{0}\": {1}", kvp.Key, kvp.Value.ToString()))),
-                Environment.NewLine);
+                string.Join(elementSeparator, KeyValues.Select(kvp => string.Format("{0}\"{1}\": {2}", Padding(level + 1), kvp.Key, kvp.Value.FormatString(level + 1)))),
+                Environment.NewLine,
+                Padding(level));
+        }
+
+        public override string ToString()
+        {
+            return FormatString(0);
         }
     }
-
-    //public class Fred
-    //{
-    //    private Json _json = new JObject(new Dictionary<string, Json>
-    //        {
-    //            {"Company name", new JString("Microsoft Corporation")},
-    //            {"Ticker", new JString("MSFT")},
-    //            {"Active", new JBool(true)},
-    //            {"Price", new JNumber(30.66)},
-    //            {
-    //                "Related companies",
-    //                new JArray(new[] {new JString("HPQ"), new JString("IBM"), new JString("YHOO"), new JString("DELL"), new JString("GOOG")})
-    //            }
-    //        });
-    //}
 }
