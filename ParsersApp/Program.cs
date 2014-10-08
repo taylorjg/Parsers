@@ -39,7 +39,7 @@ namespace ParsersApp
             PrintResult(p.Run(p.Whitespace(), "  "));
             PrintResult(p.Run(p.SkipL(p.Whitespace(), () => p.String("abc")), "  abc"));
             PrintResult(p.Run(p.SkipR(p.String("abc"), p.Whitespace), "abc  "));
-            PrintResult(p.Run(p.Surround(p.Char('['), p.Char(']'), p.String("abc")), "[abc]"));
+            PrintResult(p.Run(p.Surround(p.Char('['), p.Char(']'), () => p.String("abc")), "[abc]"));
             PrintResult(p.Run(p.Root(p.String("abc")), "abc"));
             PrintResult(p.Run(p.Quoted(), "\"abc\""));
         }
@@ -73,7 +73,7 @@ namespace ParsersApp
             return p.Surround(
                 p.Char('['),
                 p.Char(']'),
-                JsonLiteral(p).Sep(p.String(",")))
+                () => JsonLiteral(p).Sep(p.String(",")))
                     .Map(vs => new JArray(vs) as Json)
                     .Scope("array");
         }
@@ -83,8 +83,8 @@ namespace ParsersApp
             return p.Surround(
                 p.Char('{'),
                 p.Char('}'),
-                JsonKeyValue(p).Sep(p.String(","))
-                            .Map(kvs => new JObject(kvs.ToDictionary(kv => kv.Item1, kv => kv.Item2)) as Json))
+                () => JsonKeyValue(p).Sep(p.String(","))
+                                     .Map(kvs => new JObject(kvs.ToDictionary(kv => kv.Item1, kv => kv.Item2)) as Json))
                     .Scope("object");
         }
 

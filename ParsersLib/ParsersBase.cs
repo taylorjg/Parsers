@@ -118,9 +118,9 @@ namespace ParsersLib
             return Or(Sep1(p1, p2), () => Succeed(Enumerable.Empty<TA>()));
         }
 
-        public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop, Parser<TA> p)
+        public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop,Func<Parser<TA>> pFunc)
         {
-            return SkipR(SkipL(start, () => p), () => stop);
+            return SkipR(SkipL(start, pFunc), () => stop);
         }
 
         public Parser<string> Thru(string s)
