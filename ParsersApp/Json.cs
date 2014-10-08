@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ParsersApp
@@ -71,32 +72,47 @@ namespace ParsersApp
 
         public override string ToString()
         {
-            return string.Format("JArray: [{0}]", string.Join(", ", Elements.Select(e => e.ToString())));
+            var elementSeparator = "," + Environment.NewLine;
+            return string.Format(
+                "JArray: [{0}{1}{2}]",
+                Environment.NewLine,
+                string.Join(elementSeparator, Elements.Select(e => string.Format("    {0}", e.ToString()))),
+                Environment.NewLine);
         }
     }
 
     public class JObject : Json
     {
-        public IDictionary<string, Json> Map { get; private set; }
+        public IDictionary<string, Json> KeyValues { get; private set; }
 
-        public JObject(IDictionary<string, Json> map)
+        public JObject(IDictionary<string, Json> keyValues)
         {
-            Map = map;
+            KeyValues = keyValues;
+        }
+
+        public override string ToString()
+        {
+            var elementSeparator = "," + Environment.NewLine;
+            return string.Format(
+                "JObject: {{{0}{1}{2}}}",
+                Environment.NewLine,
+                string.Join(elementSeparator, KeyValues.Select(kvp => string.Format("    \"{0}\": {1}", kvp.Key, kvp.Value.ToString()))),
+                Environment.NewLine);
         }
     }
 
-    public class Fred
-    {
-        private Json _json = new JObject(new Dictionary<string, Json>
-            {
-                {"Company name", new JString("Microsoft Corporation")},
-                {"Ticker", new JString("MSFT")},
-                {"Active", new JBool(true)},
-                {"Price", new JNumber(30.66)},
-                {
-                    "Related companies",
-                    new JArray(new[] {new JString("HPQ"), new JString("IBM"), new JString("YHOO"), new JString("DELL"), new JString("GOOG")})
-                }
-            });
-    }
+    //public class Fred
+    //{
+    //    private Json _json = new JObject(new Dictionary<string, Json>
+    //        {
+    //            {"Company name", new JString("Microsoft Corporation")},
+    //            {"Ticker", new JString("MSFT")},
+    //            {"Active", new JBool(true)},
+    //            {"Price", new JNumber(30.66)},
+    //            {
+    //                "Related companies",
+    //                new JArray(new[] {new JString("HPQ"), new JString("IBM"), new JString("YHOO"), new JString("DELL"), new JString("GOOG")})
+    //            }
+    //        });
+    //}
 }

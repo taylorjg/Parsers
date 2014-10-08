@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MonadLib;
 using ParsersLib;
@@ -14,8 +15,9 @@ namespace ParsersApp
 
             ParseJsonLiteral();
             ParseJsonKeyValue();
-            ParseJsonObject();
             ParseJsonArray();
+            ParseJsonObjectWithSimpleValues();
+            ParseJsonObjectWithAnObjectValue();
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> either)
@@ -51,7 +53,7 @@ namespace ParsersApp
             PrintResult(p.Run(p.Root(p.String("abc")), "abcblah"));
         }
 
-        private static Parser<Json> Literal(ParsersBase p)
+        private static Parser<Json> JsonLiteral(ParsersBase p)
         {
             return p.Scope("literal",
                            p.String("null").As(new JNull() as Json)
@@ -61,47 +63,82 @@ namespace ParsersApp
                             .Or(() => p.String("false").As(new JBool(false) as Json)));
         }
 
-        private static Parser<Tuple<string, Json>> KeyValue(MyParserImpl p)
+        private static Parser<Tuple<string, Json>> JsonKeyValue(ParsersBase p)
         {
-            var literal = Literal(p);
-            return p.Quoted().Product(() => literal.SkipL(p.String(":")));
+            return p.Quoted().Product(() => JsonValue(p).SkipL(p.String(":")));
+        }
+
+        private static Parser<Json> JsonArray(ParsersBase p)
+        {
+            return p.Surround(
+                p.Char('['),
+                p.Char(']'),
+                JsonLiteral(p).Sep(p.String(",")))
+                    .Map(vs => new JArray(vs) as Json)
+                    .Scope("array");
+        }
+
+        private static Parser<Json> JsonObject(ParsersBase p)
+        {
+            return p.Surround(
+                p.Char('{'),
+                p.Char('}'),
+                JsonKeyValue(p).Sep(p.String(","))
+                            .Map(kvs => new JObject(kvs.ToDictionary(kv => kv.Item1, kv => kv.Item2)) as Json))
+                    .Scope("object");
+        }
+
+        private static Parser<Json> JsonValue(ParsersBase p)
+        {
+            return JsonLiteral(p).Or(() => JsonArray(p)).Or(() => JsonObject(p));
         }
 
         private static void ParseJsonLiteral()
         {
             var p = new MyParserImpl();
-            var literal = Literal(p);
+            var jsonLiteral = JsonLiteral(p);
 
-            PrintResult(p.Run(literal, "null"));
-            PrintResult(p.Run(literal, "12.4"));
-            PrintResult(p.Run(literal, "\"fred\""));
-            PrintResult(p.Run(literal, "true"));
-            PrintResult(p.Run(literal, "false"));
+            PrintResult(p.Run(jsonLiteral, "null"));
+            PrintResult(p.Run(jsonLiteral, "12.4"));
+            PrintResult(p.Run(jsonLiteral, "\"fred\""));
+            PrintResult(p.Run(jsonLiteral, "true"));
+            PrintResult(p.Run(jsonLiteral, "false"));
         }
 
         private static void ParseJsonKeyValue()
         {
             var p = new MyParserImpl();
-            var keyValue = KeyValue(p);
+            var jsonKeyValue = JsonKeyValue(p);
 
-            PrintResult(p.Run(keyValue, "\"employee\":null"));
-            PrintResult(p.Run(keyValue, "\"amount\":12.4"));
-            PrintResult(p.Run(keyValue, "\"name\":\"Jon\""));
-            PrintResult(p.Run(keyValue, "\"enabled\":true"));
-            PrintResult(p.Run(keyValue, "\"enabled\":false"));
-        }
-
-        private static void ParseJsonObject()
-        {
-            var p = new MyParserImpl();
+            PrintResult(p.Run(jsonKeyValue, "\"employee\":null"));
+            PrintResult(p.Run(jsonKeyValue, "\"amount\":12.4"));
+            PrintResult(p.Run(jsonKeyValue, "\"name\":\"Jon\""));
+            PrintResult(p.Run(jsonKeyValue, "\"enabled\":true"));
+            PrintResult(p.Run(jsonKeyValue, "\"enabled\":false"));
         }
 
         private static void ParseJsonArray()
         {
             var p = new MyParserImpl();
-            var literal = Literal(p);
-            var array = p.Surround(p.Char('['), p.Char(']'), literal.Sep(p.String(","))).Map(vs => new JArray(vs));
-            PrintResult(p.Run(array, "[1,true,null,\"fred\"]"));
+            var jsonArray = JsonArray(p);
+
+            PrintResult(p.Run(jsonArray, "[1,true,null,\"fred\"]"));
+        }
+
+        private static void ParseJsonObjectWithSimpleValues()
+        {
+            var p = new MyParserImpl();
+            var jsonObject = JsonObject(p);
+
+            PrintResult(p.Run(jsonObject, "{\"property1\":1,\"property2\":null,\"property3\":12.4,\"property4\":true}"));
+        }
+
+        private static void ParseJsonObjectWithAnObjectValue()
+        {
+            var p = new MyParserImpl();
+            var jsonObject = JsonObject(p);
+
+            PrintResult(p.Run(jsonObject, "{\"property1\":{\"age\":12}}"));
         }
     }
 }
