@@ -25,6 +25,10 @@ namespace ParsersApp
             ParseJsonObjectWithAnArrayProperty();
             ParseJsonObjectWithANestedObject();
             ParseJsonRoot();
+
+            ParseCsvFixedColumnOrder();
+            ParseCsvDateThenTemperature();
+            ParseCsvTemperatureThenDate();
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> result)
@@ -231,6 +235,116 @@ namespace ParsersApp
     }
 }
                 "));
+        }
+
+        private static Parser<DateTime> DateParser(ParsersBase p)
+        {
+            return p.Double().SkipR(() => p.String("/")).Bind(
+                day => p.Double().SkipR(() => p.String("/")).Bind(
+                    month => p.Double().Bind(
+                        year => Parser.Return(new DateTime(
+                                                  Convert.ToInt32(year),
+                                                  Convert.ToInt32(month),
+                                                  Convert.ToInt32(day))))));
+        }
+
+        private static Parser<double> TemperatureParser(ParsersBase p)
+        {
+            return p.Token(p.Double());
+        }
+
+        private static Parser<Parser<Row>> HeaderParser(ParsersBase p)
+        {
+            var dateParser = DateParser(p);
+            var temperatureParser = TemperatureParser(p);
+
+            var rowParser1 = dateParser.Product(() => p.SkipL(p.Token(p.String(",")), () => temperatureParser)).Map(tuple => new Row(tuple.Item1, tuple.Item2));
+            var rowParser2 = temperatureParser.Product(() => p.SkipL(p.Token(p.String(",")), () => dateParser)).Map(tuple => new Row(tuple.Item2, tuple.Item1));
+
+            var hash = p.Token(p.String("#"));
+            var date = p.Token(p.String("Date"));
+            var comma = p.Token(p.String(","));
+            var temperature = p.Token(p.String("Temperature"));
+
+            return p.Whitespace().SkipL(
+                () => p.Attempt(hash.SkipL(
+                    () => date.SkipL(
+                        () => comma.SkipL(
+                            () => temperature)).Map(_ => rowParser1)))
+                       ) |
+                   (() => p.Thru("\n").Map(_ => rowParser2));
+        }
+
+        public class Row
+        {
+            public DateTime Date { get; private set; }
+            public double Temperature { get; private set; }
+
+            public Row(DateTime date, double temperature)
+            {
+                Date = date;
+                Temperature = temperature;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("Date: {0}, Temp: {1}", Date.ToString("d"), Temperature);
+            }
+        }
+
+        private static void ParseCsvFixedColumnOrder()
+        {
+            var p = new MyParserImpl();
+            var dateParser = DateParser(p);
+            var temperatureParser = TemperatureParser(p);
+            var rowParser = dateParser.Product(() => p.SkipL(p.Token(p.String(",")), () => temperatureParser)).Map(tuple => new Row(tuple.Item1, tuple.Item2));
+            var rowsParser = p.Whitespace().SkipL(() => rowParser.Sep(p.Whitespace()));
+
+            const string input = @"
+1/1/2010, 25
+2/1/2010, 28
+3/1/2010, 42
+4/1/2010, 53
+";
+
+            var result = p.Run(rowsParser, input);
+            PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
+        }
+
+        private static void ParseCsvDateThenTemperature()
+        {
+            var p = new MyParserImpl();
+            var headerParser = HeaderParser(p);
+
+            const string input = @"
+# Date, Temperature
+1/1/2010, 25
+2/1/2010, 28
+3/1/2010, 42
+4/1/2010, 53
+";
+
+            var rowsParser = p.Whitespace().SkipL(() => headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace())));
+            var result = p.Run(rowsParser, input);
+            PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
+        }
+
+        private static void ParseCsvTemperatureThenDate()
+        {
+            var p = new MyParserImpl();
+            var headerParser = HeaderParser(p);
+
+            const string input = @"
+# Temperature, Date
+25, 1/1/2010
+28, 2/1/2010
+42, 3/1/2010
+53, 4/1/2010
+";
+
+            var rowsParser = p.Whitespace().SkipL(() => headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace())));
+            var result = p.Run(rowsParser, input);
+            PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }
     }
 }
