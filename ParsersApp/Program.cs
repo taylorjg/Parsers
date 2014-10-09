@@ -8,7 +8,7 @@ namespace ParsersApp
 {
     internal class Program
     {
-        private static void Main( /* string[] args */)
+        private static void Main()
         {
             ParseSimpleThingsThatShouldSucceed();
             ParseSimpleThingsThatShouldFail();
@@ -23,11 +23,11 @@ namespace ParsersApp
             ParseJsonObjectWithANestedObject();
         }
 
-        private static void PrintResult<TA>(Either<ParseError, TA> either)
+        private static void PrintResult<TA>(Either<ParseError, TA> result)
         {
-            either.Match(
+            result.Match(
                 Console.WriteLine,
-                a => Console.WriteLine("a: {0}", a));
+                a => Console.WriteLine("Result of parsing: {0}", a));
         }
 
         private static void ParseSimpleThingsThatShouldSucceed()
