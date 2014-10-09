@@ -14,10 +14,10 @@ namespace ParsersApp
             ParseSimpleThingsThatShouldFail();
 
             ParseJsonLiteral();
+            ParseJsonArray();
             ParseJsonKeyValueWithSimpleValues();
             ParseJsonKeyValueWithArrayValue();
             ParseJsonKeyValueWithObjectValue();
-            ParseJsonArray();
             ParseJsonObjectWithSimpleValues();
             ParseJsonObjectWithAnArrayProperty();
             ParseJsonObjectWithANestedObject();
@@ -25,9 +25,7 @@ namespace ParsersApp
 
         private static void PrintResult<TA>(Either<ParseError, TA> result)
         {
-            result.Match(
-                Console.WriteLine,
-                a => Console.WriteLine("Result of parsing: {0}", a));
+            result.Match(Console.WriteLine, a => Console.WriteLine(a));
         }
 
         private static void ParseSimpleThingsThatShouldSucceed()

@@ -14,7 +14,7 @@ namespace ParsersLib
         public override Parser<string> String(string s)
         {
             return new Parser<string>(this,
-                l => l.Input.Substring(l.Offset).StartsWith(s)
+                l => l.CurrentInput.StartsWith(s)
                          ? new Success<string>(s, s.Length) as Result<string>
                          : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s), false));
         }
@@ -24,7 +24,7 @@ namespace ParsersLib
             return new Parser<string>(this,
                 l =>
                     {
-                        var match = r.Match(l.Input.Substring(l.Offset));
+                        var match = r.Match(l.CurrentInput);
                         if (match.Success)
                         {
                             var a = match.Value;
@@ -37,7 +37,7 @@ namespace ParsersLib
         public override Parser<string> Slice<TA>(Parser<TA> p)
         {
             return new Parser<string>(this, l => p.Run(l).MatchResult(
-                success => new Success<string>(l.Input.Substring(l.Offset, success.CharsConsumed), success.CharsConsumed),
+                success => new Success<string>(l.CurrentInput.Substring(0, success.CharsConsumed), success.CharsConsumed),
                 failure => new Failure<string>(failure.ParseError, failure.IsCommitted)));
         }
 

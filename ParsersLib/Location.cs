@@ -14,6 +14,11 @@ namespace ParsersLib
         public string Input { get; private set; }
         public int Offset { get; private set; }
 
+        public string CurrentInput
+        {
+            get { return Input.Substring(Offset); }
+        }
+
         public int Line
         {
             get
