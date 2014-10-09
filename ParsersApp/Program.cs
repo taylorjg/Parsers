@@ -21,6 +21,7 @@ namespace ParsersApp
             ParseJsonObjectWithSimpleValues();
             ParseJsonObjectWithAnArrayProperty();
             ParseJsonObjectWithANestedObject();
+            ParseJsonRoot();
         }
 
         private static void PrintResult<TA>(Either<ParseError, TA> result)
@@ -58,24 +59,24 @@ namespace ParsersApp
         {
             return p.Scope(
                 "literal",
-                p.String("null").As(new JNull() as Json) |
+                p.Token(p.String("null")).As(new JNull() as Json) |
                 (() => p.Double().Map(n => new JNumber(n) as Json)) |
-                (() => p.Quoted().Map(s => new JString(s) as Json)) |
-                (() => p.String("true").As(new JBool(true) as Json)) |
-                (() => p.String("false").As(new JBool(false) as Json)));
+                (() => p.Token(p.Quoted()).Map(s => new JString(s) as Json)) |
+                (() => p.Token(p.String("true")).As(new JBool(true) as Json)) |
+                (() => p.Token(p.String("false")).As(new JBool(false) as Json)));
         }
 
         private static Parser<Tuple<string, Json>> JsonKeyValue(ParsersBase p)
         {
-            return p.Quoted().Product(() => p.SkipL(p.String(":"), () => JsonValue(p)));
+            return p.Quoted().Product(() => p.SkipL(p.Token(p.String(":")), () => JsonValue(p)));
         }
 
         private static Parser<Json> JsonArray(ParsersBase p)
         {
             return p.Surround(
-                p.Char('['),
-                p.Char(']'),
-                () => JsonValue(p).Sep(p.String(",")))
+                p.Token(p.String("[")),
+                p.Token(p.String("]")),
+                () => JsonValue(p).Sep(p.Token(p.String(","))))
                     .Map(vs => new JArray(vs) as Json)
                     .Scope("array");
         }
@@ -83,9 +84,9 @@ namespace ParsersApp
         private static Parser<Json> JsonObject(ParsersBase p)
         {
             return p.Surround(
-                p.Char('{'),
-                p.Char('}'),
-                () => JsonKeyValue(p).Sep(p.String(","))
+                p.Token(p.String("{")),
+                p.Token(p.String("}")),
+                () => JsonKeyValue(p).Sep(p.Token(p.String(",")))
                                      .Map(kvs => new JObject(kvs.ToDictionary(kv => kv.Item1, kv => kv.Item2)) as Json))
                     .Scope("object");
         }
@@ -96,6 +97,11 @@ namespace ParsersApp
                 JsonLiteral(p) |
                 (() => JsonArray(p)) |
                 (() => JsonObject(p));
+        }
+
+        private static Parser<Json> JsonRoot(ParsersBase p)
+        {
+            return p.Whitespace().SkipL(() => JsonObject(p) | (() => JsonArray(p)));
         }
 
         private static void ParseJsonLiteral()
@@ -120,6 +126,7 @@ namespace ParsersApp
             PrintResult(p.Run(jsonKeyValue, "\"name\":\"Jon\""));
             PrintResult(p.Run(jsonKeyValue, "\"enabled\":true"));
             PrintResult(p.Run(jsonKeyValue, "\"enabled\":false"));
+            PrintResult(p.Run(jsonKeyValue, "\"amount2\": 12.4"));
         }
 
         private static void ParseJsonKeyValueWithArrayValue()
@@ -169,6 +176,41 @@ namespace ParsersApp
             var jsonObject = JsonObject(p);
 
             PrintResult(p.Run(jsonObject, "{\"property1\":{\"age\":12}}"));
+        }
+
+        private static void ParseJsonRoot()
+        {
+            var p = new MyParserImpl();
+            var jsonRoot = JsonRoot(p);
+
+            PrintResult(p.Run(jsonRoot, @"
+{
+    ""property1"": {
+        ""age"": 12
+    },
+    ""property2"": {
+        ""name"": ""Henry""
+    }
+}
+                "));
+
+            PrintResult(p.Run(jsonRoot, @"
+{
+    ""property1"": {
+        ""age"": 14
+    },
+    ""property2"": {
+        ""name"": ""Sally""
+    },
+    ""property3"": {
+        ""numbers"": [
+            1,
+            2,
+            3
+        ]
+    }
+}
+                "));
         }
     }
 }
