@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MonadLib;
@@ -12,6 +13,8 @@ namespace ParsersApp
         {
             ParseSimpleThingsThatShouldSucceed();
             ParseSimpleThingsThatShouldFail();
+
+            ParseContextSensitive();
 
             ParseJsonLiteral();
             ParseJsonArray();
@@ -27,6 +30,11 @@ namespace ParsersApp
         private static void PrintResult<TA>(Either<ParseError, TA> result)
         {
             result.Match(Console.WriteLine, a => Console.WriteLine(a));
+        }
+
+        private static void PrintResult<TA>(Either<ParseError, TA> result, Func<TA, string> f)
+        {
+            result.Match(Console.WriteLine, a => Console.WriteLine(f(a)));
         }
 
         private static void ParseSimpleThingsThatShouldSucceed()
@@ -53,6 +61,18 @@ namespace ParsersApp
             PrintResult(p.Run(p.String("abc"), "defg"));
             PrintResult(p.Run(p.Eof(), "abc"));
             PrintResult(p.Run(p.Root(p.String("abc")), "abcblah"));
+        }
+
+        private static void ParseContextSensitive()
+        {
+            var p = new MyParserImpl();
+            var parser = p.FlatMap(p.Double(), n => p.ListOfN(Convert.ToInt32(n), p.Char('a')));
+            Func<IEnumerable<char>, string> f = xs => string.Join("", xs);
+            PrintResult(p.Run(parser, "0"), f);
+            PrintResult(p.Run(parser, "1a"), f);
+            PrintResult(p.Run(parser, "2aa"), f);
+            PrintResult(p.Run(parser, "3aaa"), f);
+            PrintResult(p.Run(parser, "7aaaaaaa"), f);
         }
 
         private static Parser<Json> JsonLiteral(ParsersBase p)

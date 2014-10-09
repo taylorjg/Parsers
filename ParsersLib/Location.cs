@@ -23,7 +23,8 @@ namespace ParsersLib
         {
             get
             {
-                return Input.Substring(0, Offset + 1).Count(x => x == '\n');
+                // TODO: instead of the substring from 0 -> Offset, should we use 0 -> location of first line break after Offset ?
+                return Input.Substring(0, Offset).Count(x => x == '\n');
             }
         }
 
@@ -31,7 +32,8 @@ namespace ParsersLib
         {
             get
             {
-                var lineStart = Input.Substring(0, Offset + 1).LastIndexOf('\n');
+                // TODO: instead of the substring from 0 -> Offset, should we use 0 -> location of first line break after Offset ?
+                var lineStart = Input.Substring(0, Offset).LastIndexOf('\n');
                 switch (lineStart)
                 {
                     case -1:
