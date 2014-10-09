@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using MonadLib;
 
 namespace ParsersLib
 {
     // Will this class become a monad eventually ?
 
-    public class Parser<TA>
+    public class Parser<TA> : IMonad<TA>
     {
         private readonly ParsersBase _parsersBase;
         private readonly Func<Location, Result<TA>> _runFunc;
@@ -104,6 +105,36 @@ namespace ParsersLib
         public Parser<IEnumerable<TA>> ListOfN(int n)
         {
             return _parsersBase.ListOfN(n, this);
+        }
+
+        private MonadAdapter _monadAdapter;
+
+        public MonadAdapter GetMonadAdapter()
+        {
+            return _monadAdapter ?? (_monadAdapter = new ParserMonadAdapter());
+        }
+    }
+
+    public static class Parser
+    {
+        public static Parser<TA> Return<TA>(TA a)
+        {
+            // TODO: it would be nice to find a way to remove this hard dependency on MyParserImpl.
+            return new MyParserImpl().Succeed(a);
+        }
+    }
+
+    internal class ParserMonadAdapter : MonadAdapter
+    {
+        public override IMonad<TA> Return<TA>(TA a)
+        {
+            return Parser.Return(a);
+        }
+
+        public override IMonad<TB> Bind<TA, TB>(IMonad<TA> ma, Func<TA, IMonad<TB>> f)
+        {
+            var parserA = (Parser<TA>) ma;
+            return parserA.FlatMap(a => (Parser<TB>) f(a));
         }
     }
 }
