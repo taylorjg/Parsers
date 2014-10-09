@@ -26,6 +26,11 @@ namespace ParsersLib
             return _parsersBase.Or(this, p2Func);
         }
 
+        public static Parser<TA> operator |(Parser<TA> p1, Func<Parser<TA>> p2Func)
+        {
+            return p1.Or(p2Func);
+        }
+
         public Parser<TB> Map<TB>(Func<TA, TB> f)
         {
             return _parsersBase.Map(this, f);

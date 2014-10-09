@@ -58,12 +58,13 @@ namespace ParsersApp
 
         private static Parser<Json> JsonLiteral(ParsersBase p)
         {
-            return p.Scope("literal",
-                           p.String("null").As(new JNull() as Json)
-                            .Or(() => p.Double().Map(n => new JNumber(n) as Json))
-                            .Or(() => p.Quoted().Map(s => new JString(s) as Json))
-                            .Or(() => p.String("true").As(new JBool(true) as Json))
-                            .Or(() => p.String("false").As(new JBool(false) as Json)));
+            return p.Scope(
+                "literal",
+                p.String("null").As(new JNull() as Json) |
+                (() => p.Double().Map(n => new JNumber(n) as Json)) |
+                (() => p.Quoted().Map(s => new JString(s) as Json)) |
+                (() => p.String("true").As(new JBool(true) as Json)) |
+                (() => p.String("false").As(new JBool(false) as Json)));
         }
 
         private static Parser<Tuple<string, Json>> JsonKeyValue(ParsersBase p)
@@ -93,7 +94,10 @@ namespace ParsersApp
 
         private static Parser<Json> JsonValue(ParsersBase p)
         {
-            return JsonLiteral(p).Or(() => JsonArray(p)).Or(() => JsonObject(p));
+            return
+                JsonLiteral(p) |
+                (() => JsonArray(p)) |
+                (() => JsonObject(p));
         }
 
         private static void ParseJsonLiteral()
