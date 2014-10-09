@@ -122,6 +122,18 @@ namespace ParsersLib
             // TODO: it would be nice to find a way to remove this hard dependency on MyParserImpl.
             return new MyParserImpl().Succeed(a);
         }
+
+        public static Parser<TB> Bind<TA, TB>(this Parser<TA> ma, Func<TA, Parser<TB>> f)
+        {
+            var monadAdapter = ma.GetMonadAdapter();
+            return (Parser<TB>)monadAdapter.Bind(ma, f);
+        }
+
+        public static Parser<TB> BindIgnoringLeft<TA, TB>(this Parser<TA> ma, Parser<TB> mb)
+        {
+            var monadAdapter = ma.GetMonadAdapter();
+            return (Parser<TB>)monadAdapter.BindIgnoringLeft(ma, mb);
+        }
     }
 
     internal class ParserMonadAdapter : MonadAdapter

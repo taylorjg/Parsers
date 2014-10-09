@@ -66,7 +66,7 @@ namespace ParsersApp
         private static void ParseContextSensitive()
         {
             var p = new MyParserImpl();
-            var parser = p.FlatMap(p.Double(), n => p.ListOfN(Convert.ToInt32(n), p.Char('a')));
+            var parser = p.Double().Bind(n => p.ListOfN(Convert.ToInt32(n), p.Char('a')));
             Func<IEnumerable<char>, string> f = xs => string.Join("", xs);
             PrintResult(p.Run(parser, "0"), f);
             PrintResult(p.Run(parser, "1a"), f);
