@@ -48,12 +48,12 @@ namespace ParsersApp
             var rowParser2 = temperatureParser.Product(() => p.SkipL(p.Token(p.String(",")), () => dateParser)).Map(tuple => new Row(tuple.Item2, tuple.Item1));
 
             var columnTitlesParser = ColumnTitlesParser(p);
-            return columnTitlesParser.Bind(cols =>
+            return columnTitlesParser.Map(cols =>
                 {
                     var colsList1 = cols.ToList();
-                    if (colsList1.SequenceEqual(new[] { "Date", "Temperature" })) return Parser.Return(rowParser1);
-                    if (colsList1.SequenceEqual(new[] { "Temperature", "Date" })) return Parser.Return(rowParser2);
-                    return Parser.Return(p.Fail<Row>(""));
+                    if (colsList1.SequenceEqual(new[] { "Date", "Temperature" })) return rowParser1;
+                    if (colsList1.SequenceEqual(new[] { "Temperature", "Date" })) return rowParser2;
+                    return p.Fail<Row>("");
                 });
         }
 
@@ -95,36 +95,30 @@ namespace ParsersApp
 
         private static void ParseCsvDateThenTemperature()
         {
-            var p = new MyParserImpl();
-            var headerParser = HeaderParser(p);
-
-            const string input = @"
+            ParseCsvDynamically(@"
 # Date, Temperature
 1/1/2010, 25
 2/1/2010, 28
 3/1/2010, 42
 4/1/2010, 53
-";
-
-            var rowsParser = headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace()));
-            var result = p.Run(rowsParser, input);
-            Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
+");
         }
 
         private static void ParseCsvTemperatureThenDate()
         {
-            var p = new MyParserImpl();
-            var headerParser = HeaderParser(p);
-
-            const string input = @"
+            ParseCsvDynamically(@"
 # Temperature, Date
 25, 1/1/2010
 28, 2/1/2010
 42, 3/1/2010
 53, 4/1/2010
-";
+");
+        }
 
-            var rowsParser = headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace()));
+        private static void ParseCsvDynamically(string input)
+        {
+            var p = new MyParserImpl();
+            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.Sep(p.Whitespace()));
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }
