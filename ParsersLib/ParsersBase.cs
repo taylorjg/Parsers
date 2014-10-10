@@ -25,7 +25,7 @@ namespace ParsersLib
         // Combinators
         public Parser<char> Char(char c)
         {
-            return Map(String(Convert.ToString(c)), a => a.First());
+            return String(new string(c, 1)).Map(s => s.First());
         }
 
         public Parser<string> R(string pattern)
@@ -35,24 +35,22 @@ namespace ParsersLib
 
         public Parser<TB> Map<TA, TB>(Parser<TA> p, Func<TA, TB> f)
         {
-            return FlatMap(p, a => Succeed(f(a)));
+            return p.FlatMap(a => Succeed(f(a)));
         }
 
         public Parser<TC> Map2<TA, TB, TC>(Parser<TA> p1, Func<Parser<TB>> p2Func, Func<TA, TB, TC> f)
         {
-            return FlatMap(p1, a => Map(p2Func(), b => f(a, b)));
+            return p1.FlatMap(a => Map(p2Func(), b => f(a, b)));
         }
 
         public Parser<Tuple<TA, TB>> Product<TA, TB>(Parser<TA> p1, Func<Parser<TB>> p2Func)
         {
-            return FlatMap(p1, a => Map(p2Func(), b => Tuple.Create(a, b)));
+            return p1.FlatMap(a => Map(p2Func(), b => Tuple.Create(a, b)));
         }
 
         public Parser<IEnumerable<TA>> Many<TA>(Parser<TA> p)
         {
-            return Or(
-                Map2(p, () => Many(p), Cons),
-                () => Succeed(Enumerable.Empty<TA>()));
+            return Map2(p, () => Many(p), Cons) | (() => Succeed(Enumerable.Empty<TA>()));
         }
 
         public Parser<IEnumerable<TA>> Many1<TA>(Parser<TA> p)
@@ -79,9 +77,7 @@ namespace ParsersLib
 
         public Parser<Maybe<TA>> Opt<TA>(Parser<TA> p)
         {
-            var p1 = Map(p, Maybe.Just);
-            var p2 = Succeed(Maybe.Nothing<TA>());
-            return Or(p1, () => p2);
+            return p.Map(Maybe.Just) | (() => Succeed(Maybe.Nothing<TA>()));
         }
 
         public Parser<string> Whitespace()
@@ -96,7 +92,7 @@ namespace ParsersLib
 
         public Parser<TA> Token<TA>(Parser<TA> p)
         {
-            return SkipR(Attempt(p), Whitespace);
+            return Attempt(p).SkipR(Whitespace);
         }
 
         public Parser<string> DoubleString()
@@ -106,7 +102,7 @@ namespace ParsersLib
 
         public Parser<double> Double()
         {
-            return Label("double literal", Map(DoubleString(), Convert.ToDouble));
+            return Label("double literal", DoubleString().Map(Convert.ToDouble));
         }
 
         public Parser<int> Int()
@@ -126,12 +122,14 @@ namespace ParsersLib
 
         public Parser<IEnumerable<TA>> Sep<TA, TB>(Parser<TA> p1, Parser<TB> p2)
         {
-            return Or(Sep1(p1, p2), () => Succeed(Enumerable.Empty<TA>()));
+            return p1.Sep1(p2) | (() => Succeed(Enumerable.Empty<TA>()));
         }
 
         public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop, Func<Parser<TA>> pFunc)
         {
-            return SkipR(SkipL(start, pFunc), () => stop);
+            return start.SkipL(
+                () => pFunc().SkipR(
+                    () => stop));
         }
 
         public Parser<string> Thru(string s)
@@ -141,17 +139,17 @@ namespace ParsersLib
 
         public Parser<string> Quoted()
         {
-            return Map(SkipL(String("\""), () => Thru("\"")), s => s.Substring(0, s.Length - 1));
+            return String("\"").SkipL(() => Thru("\"")).Map(s => s.Substring(0, s.Length - 1));
         }
 
         public Parser<TB> As<TA, TB>(Parser<TA> p, TB b)
         {
-            return Map(Slice(p), _ => b);
+            return Slice(p).Map(_ => b);
         }
 
         public Parser<TA> Root<TA>(Parser<TA> p)
         {
-            return SkipR(p, Eof);
+            return p.SkipR(Eof);
         }
 
         private static IEnumerable<T> Cons<T>(T x, IEnumerable<T> xs)
