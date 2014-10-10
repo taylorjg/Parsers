@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ParsersLib;
 
@@ -26,6 +27,18 @@ namespace ParsersApp
             return p.Token(p.Int());
         }
 
+        private static Parser<IEnumerable<string>> ColumnTitlesParser(ParsersBase p)
+        {
+            var beginLineCommentParser = p.Token(p.String("#"));
+            var commaParser = p.Token(p.String(","));
+            var columnTitleParser = p.Token(p.Quoted() | (() => p.R(@"(\w+)")));
+
+            return p.Whitespace()
+                    .SkipL(
+                        () => beginLineCommentParser.SkipL(
+                            () => columnTitleParser.Sep(commaParser)));
+        }
+
         private static Parser<Parser<Row>> HeaderParser(ParsersBase p)
         {
             var dateParser = DateParser(p);
@@ -34,18 +47,14 @@ namespace ParsersApp
             var rowParser1 = dateParser.Product(() => p.SkipL(p.Token(p.String(",")), () => temperatureParser)).Map(tuple => new Row(tuple.Item1, tuple.Item2));
             var rowParser2 = temperatureParser.Product(() => p.SkipL(p.Token(p.String(",")), () => dateParser)).Map(tuple => new Row(tuple.Item2, tuple.Item1));
 
-            var hash = p.Token(p.String("#"));
-            var date = p.Token(p.String("Date"));
-            var comma = p.Token(p.String(","));
-            var temperature = p.Token(p.String("Temperature"));
-
-            return p.Whitespace().SkipL(
-                () => p.Attempt(hash.SkipL(
-                    () => date.SkipL(
-                        () => comma.SkipL(
-                            () => temperature)).Map(_ => rowParser1)))
-                       ) |
-                   (() => p.Thru("\n").Map(_ => rowParser2));
+            var columnTitlesParser = ColumnTitlesParser(p);
+            return columnTitlesParser.Bind(cols =>
+                {
+                    var colsList1 = cols.ToList();
+                    if (colsList1.SequenceEqual(new[] { "Date", "Temperature" })) return Parser.Return(rowParser1);
+                    if (colsList1.SequenceEqual(new[] { "Temperature", "Date" })) return Parser.Return(rowParser2);
+                    return Parser.Return(p.Fail<Row>(""));
+                });
         }
 
         public class Row
@@ -97,7 +106,7 @@ namespace ParsersApp
 4/1/2010, 53
 ";
 
-            var rowsParser = p.Whitespace().SkipL(() => headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace())));
+            var rowsParser = headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace()));
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }
@@ -115,7 +124,7 @@ namespace ParsersApp
 53, 4/1/2010
 ";
 
-            var rowsParser = p.Whitespace().SkipL(() => headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace())));
+            var rowsParser = headerParser.Bind(rowParser => rowParser.Sep(p.Whitespace()));
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }

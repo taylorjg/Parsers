@@ -28,6 +28,11 @@ namespace ParsersLib
             return Map(String(Convert.ToString(c)), a => a.First());
         }
 
+        public Parser<string> R(string pattern)
+        {
+            return Regex(new Regex(pattern));
+        }
+
         public Parser<TB> Map<TA, TB>(Parser<TA> p, Func<TA, TB> f)
         {
             return FlatMap(p, a => Succeed(f(a)));
@@ -152,11 +157,6 @@ namespace ParsersLib
         private static IEnumerable<T> Cons<T>(T x, IEnumerable<T> xs)
         {
             return Enumerable.Repeat(x, 1).Concat(xs);
-        }
-
-        private Parser<string> R(string pattern)
-        {
-            return Regex(new Regex(pattern));
         }
     }
 }
