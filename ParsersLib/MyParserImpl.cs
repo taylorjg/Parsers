@@ -46,6 +46,11 @@ namespace ParsersLib
             return new Parser<TA>(this, l => new Success<TA>(a, 0));
         }
 
+        public override Parser<TA> Fail<TA>(string message)
+        {
+            return new Parser<TA>(this, l => new Failure<TA>(l.ToError(message), false));
+        }
+
         public override Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f)
         {
             return new Parser<TB>(this, l => p.Run(l).MatchResult(

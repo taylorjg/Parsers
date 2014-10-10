@@ -15,6 +15,7 @@ namespace ParsersLib
         public abstract Parser<string> Regex(Regex r);
         public abstract Parser<string> Slice<TA>(Parser<TA> p);
         public abstract Parser<TA> Succeed<TA>(TA a);
+        public abstract Parser<TA> Fail<TA>(string message);
         public abstract Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f);
         public abstract Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func);
         public abstract Parser<TA> Label<TA>(string message, Parser<TA> p); 

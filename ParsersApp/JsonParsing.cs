@@ -27,7 +27,8 @@ namespace ParsersApp
                 (() => p.Double().Map(n => new JNumber(n) as Json)) |
                 (() => p.Token(p.Quoted()).Map(s => new JString(s) as Json)) |
                 (() => p.Token(p.String("true")).As(new JBool(true) as Json)) |
-                (() => p.Token(p.String("false")).As(new JBool(false) as Json)));
+                (() => p.Token(p.String("false")).As(new JBool(false) as Json))) |
+                (() => p.Fail<Json>("expected a literal"));
         }
 
         private static Parser<Tuple<string, Json>> JsonKeyValue(ParsersBase p)
@@ -60,12 +61,16 @@ namespace ParsersApp
             return
                 JsonLiteral(p) |
                 (() => JsonArray(p)) |
-                (() => JsonObject(p));
+                (() => JsonObject(p)) |
+                (() => p.Fail<Json>("expected a literal or an array or an object"));
         }
 
         private static Parser<Json> JsonRoot(ParsersBase p)
         {
-            return p.Whitespace().SkipL(() => JsonObject(p) | (() => JsonArray(p)));
+            return p.Whitespace().SkipL(
+                () => JsonObject(p) |
+                      (() => JsonArray(p)) |
+                      (() => p.Fail<Json>("expected an object or an array")));
         }
 
         private static void ParseJsonLiteral()
@@ -78,6 +83,7 @@ namespace ParsersApp
             Program.PrintResult(p.Run(jsonLiteral, "\"fred\""));
             Program.PrintResult(p.Run(jsonLiteral, "true"));
             Program.PrintResult(p.Run(jsonLiteral, "false"));
+            Program.PrintResult(p.Run(jsonLiteral, "bogus"));
         }
 
         private static void ParseJsonKeyValueWithSimpleValues()
@@ -91,6 +97,7 @@ namespace ParsersApp
             Program.PrintResult(p.Run(jsonKeyValue, "\"enabled\":true"));
             Program.PrintResult(p.Run(jsonKeyValue, "\"enabled\":false"));
             Program.PrintResult(p.Run(jsonKeyValue, "\"amount2\": 12.4"));
+            Program.PrintResult(p.Run(jsonKeyValue, "\"amount2\": bogus"));
         }
 
         private static void ParseJsonKeyValueWithArrayValue()
