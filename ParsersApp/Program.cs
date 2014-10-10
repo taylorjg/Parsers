@@ -239,18 +239,15 @@ namespace ParsersApp
 
         private static Parser<DateTime> DateParser(ParsersBase p)
         {
-            return p.Double().SkipR(() => p.String("/")).Bind(
-                day => p.Double().SkipR(() => p.String("/")).Bind(
-                    month => p.Double().Bind(
-                        year => Parser.Return(new DateTime(
-                                                  Convert.ToInt32(year),
-                                                  Convert.ToInt32(month),
-                                                  Convert.ToInt32(day))))));
+            return p.Int().SkipR(() => p.String("/")).Bind(
+                day => p.Int().SkipR(() => p.String("/")).Bind(
+                    month => p.Int().Bind(
+                        year => Parser.Return(new DateTime(year, month, day)))));
         }
 
-        private static Parser<double> TemperatureParser(ParsersBase p)
+        private static Parser<int> TemperatureParser(ParsersBase p)
         {
-            return p.Token(p.Double());
+            return p.Token(p.Int());
         }
 
         private static Parser<Parser<Row>> HeaderParser(ParsersBase p)
@@ -278,9 +275,9 @@ namespace ParsersApp
         public class Row
         {
             public DateTime Date { get; private set; }
-            public double Temperature { get; private set; }
+            public int Temperature { get; private set; }
 
-            public Row(DateTime date, double temperature)
+            public Row(DateTime date, int temperature)
             {
                 Date = date;
                 Temperature = temperature;

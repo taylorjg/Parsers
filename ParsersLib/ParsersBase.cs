@@ -103,6 +103,11 @@ namespace ParsersLib
             return Label("double literal", Map(DoubleString(), Convert.ToDouble));
         }
 
+        public Parser<int> Int()
+        {
+            return Token(Digits()).Map(Convert.ToInt32);
+        }
+
         public Parser<string> Eof()
         {
             return Label("unexpected trailing characters", R(@"^\z"));
