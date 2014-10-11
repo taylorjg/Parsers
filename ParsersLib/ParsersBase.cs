@@ -107,7 +107,8 @@ namespace ParsersLib
 
         public Parser<int> Int()
         {
-            return Token(Digits()).Map(Convert.ToInt32);
+            //return Token(Digits()).Map(Convert.ToInt32);
+            return Digits().Map(Convert.ToInt32);
         }
 
         public Parser<string> Eof()

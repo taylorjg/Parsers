@@ -21,19 +21,16 @@ namespace ParsersApp
             return thingParser.SkipR(() => p.Opt(p.Token(p.String(","))));
         }
 
-        private static Parser<DateTime> DateParser(ParsersBase p)
+        private static Parser<DateTime> DateParser(ParsersBase p, bool lastColumn)
         {
-            var dateParser = p.Int().SkipR(() => p.String("/")).Bind(
-                day => p.Int().SkipR(() => p.String("/")).Bind(
-                    month => p.Int().Bind(
-                        year => Parser.Return(new DateTime(year, month, day)))));
-            return AddOptionalCommaTokenSuffix(p, dateParser);
+            var dateParser = p.R(@"\d{1,2}/\d{1,2}/\d{4}").Map(DateTime.Parse);
+            return lastColumn ? dateParser : AddOptionalCommaTokenSuffix(p, dateParser);
         }
 
-        private static Parser<int> TemperatureParser(ParsersBase p)
+        private static Parser<int> TemperatureParser(ParsersBase p, bool lastColumn)
         {
-            var temperatureParser = p.Token(p.Int());
-            return AddOptionalCommaTokenSuffix(p, temperatureParser);
+            var temperatureParser = p.Int();
+            return lastColumn ? temperatureParser : AddOptionalCommaTokenSuffix(p, temperatureParser);
         }
 
         private static Parser<IEnumerable<string>> ColumnTitlesParser(ParsersBase p)
@@ -50,11 +47,13 @@ namespace ParsersApp
 
         private static Parser<Parser<Row>> HeaderParser(ParsersBase p)
         {
-            var dateParser = DateParser(p);
-            var temperatureParser = TemperatureParser(p);
+            var dateParser1 = DateParser(p, false);
+            var temperatureParser1 = TemperatureParser(p, true);
+            var rowParser1 = p.Map2(dateParser1, () => temperatureParser1, Row.MakeRowFunc);
 
-            var rowParser1 = p.Map2(dateParser, () => temperatureParser, Row.MakeRowFunc);
-            var rowParser2 = p.Map2(temperatureParser, () => dateParser, Flip(Row.MakeRowFunc));
+            var temperatureParser2 = TemperatureParser(p, false);
+            var dateParser2 = DateParser(p, true);
+            var rowParser2 = p.Map2(temperatureParser2, () => dateParser2, Flip(Row.MakeRowFunc));
 
             var columnTitlesParser = ColumnTitlesParser(p);
             return columnTitlesParser.Map(cols =>
@@ -101,17 +100,16 @@ namespace ParsersApp
         private static void ParseCsvFixedColumnOrder()
         {
             var p = new MyParserImpl();
-            var dateParser = DateParser(p);
-            var temperatureParser = TemperatureParser(p);
+            var dateParser = DateParser(p, false);
+            var temperatureParser = TemperatureParser(p, true);
             var rowParser = p.Map2(dateParser, () => temperatureParser, Row.MakeRowFunc);
-            var rowsParser = p.Whitespace().SkipL(() => rowParser.Sep(p.Whitespace()));
+            var rowsParser = p.Whitespace().SkipL(() => rowParser.Sep(p.String(Environment.NewLine)));
 
             const string input = @"
 1/1/2010, 25
 2/1/2010, 28
 3/1/2010, 42
-4/1/2010, 53
-";
+4/1/2010, 53";
 
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
@@ -124,8 +122,7 @@ namespace ParsersApp
 1/1/2010, 25
 2/1/2010, 28
 3/1/2010, 42
-4/1/2010, 53
-");
+4/1/2010, 53");
         }
 
         private static void ParseCsvTemperatureThenDate()
@@ -135,14 +132,13 @@ namespace ParsersApp
 25, 1/1/2010
 28, 2/1/2010
 42, 3/1/2010
-53, 4/1/2010
-");
+53, 4/1/2010");
         }
 
         private static void ParseCsvDynamically(string input)
         {
             var p = new MyParserImpl();
-            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.Sep(p.Whitespace()));
+            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.Sep(p.String(Environment.NewLine)));
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }

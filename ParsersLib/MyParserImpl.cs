@@ -24,12 +24,14 @@ namespace ParsersLib
             return new Parser<string>(this,
                 l =>
                     {
+                        //Console.WriteLine("Regex on entry - input: >-{0}-<", l.CurrentInput);
                         var match = r.Match(l.CurrentInput);
                         if (match.Success)
                         {
                             var a = match.Value;
                             return new Success<string>(a, a.Length);
                         }
+                        //Console.WriteLine("Regex on no match - input: >-{0}-<", l.CurrentInput);
                         return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r), false);
                     });
         }
