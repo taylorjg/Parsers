@@ -25,6 +25,10 @@ namespace ParsersApp
             Program.PrintResult(p.Run(p.Surround(p.Char('['), p.Char(']'), () => p.String("abc")), "[abc]"));
             Program.PrintResult(p.Run(p.Root(p.String("abc")), "abc"));
             Program.PrintResult(p.Run(p.Quoted(), "\"abc\""));
+
+            var intAndOptionalCommaParser = p.Int().SkipR(() => p.Opt(p.Token(p.String(","))));
+            Program.PrintResult(p.Run(intAndOptionalCommaParser, "10, 11, 12"));
+            Program.PrintResult(p.Run(intAndOptionalCommaParser, "10"));
         }
 
         private static void ParseSimpleThingsThatShouldFail()

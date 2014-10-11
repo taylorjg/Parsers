@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ParsersLib;
 
+// ReSharper disable ImplicitlyCapturedClosure
+
 namespace ParsersApp
 {
     public static class CsvParsing
@@ -14,17 +16,24 @@ namespace ParsersApp
             ParseCsvTemperatureThenDate();
         }
 
+        private static Parser<TA> AddOptionalCommaTokenSuffix<TA>(ParsersBase p, Parser<TA> thingParser)
+        {
+            return thingParser.SkipR(() => p.Opt(p.Token(p.String(","))));
+        }
+
         private static Parser<DateTime> DateParser(ParsersBase p)
         {
-            return p.Int().SkipR(() => p.String("/")).Bind(
+            var dateParser = p.Int().SkipR(() => p.String("/")).Bind(
                 day => p.Int().SkipR(() => p.String("/")).Bind(
                     month => p.Int().Bind(
                         year => Parser.Return(new DateTime(year, month, day)))));
+            return AddOptionalCommaTokenSuffix(p, dateParser);
         }
 
         private static Parser<int> TemperatureParser(ParsersBase p)
         {
-            return p.Token(p.Int());
+            var temperatureParser = p.Token(p.Int());
+            return AddOptionalCommaTokenSuffix(p, temperatureParser);
         }
 
         private static Parser<IEnumerable<string>> ColumnTitlesParser(ParsersBase p)
@@ -44,8 +53,8 @@ namespace ParsersApp
             var dateParser = DateParser(p);
             var temperatureParser = TemperatureParser(p);
 
-            var rowParser1 = dateParser.Product(() => p.SkipL(p.Token(p.String(",")), () => temperatureParser)).Map(tuple => new Row(tuple.Item1, tuple.Item2));
-            var rowParser2 = temperatureParser.Product(() => p.SkipL(p.Token(p.String(",")), () => dateParser)).Map(tuple => new Row(tuple.Item2, tuple.Item1));
+            var rowParser1 = p.Map2(dateParser, () => temperatureParser, Row.MakeRowFunc);
+            var rowParser2 = p.Map2(temperatureParser, () => dateParser, Flip(Row.MakeRowFunc));
 
             var columnTitlesParser = ColumnTitlesParser(p);
             return columnTitlesParser.Map(cols =>
@@ -72,6 +81,21 @@ namespace ParsersApp
             {
                 return string.Format("Date: {0}, Temp: {1}", Date.ToString("d"), Temperature);
             }
+
+            public static Row MakeRow(DateTime date, int temperature)
+            {
+                return new Row(date, temperature);
+            }
+
+            public static Func<DateTime, int, Row> MakeRowFunc
+            {
+                get { return MakeRow; }
+            }
+        }
+
+        private static Func<TB, TA, TC> Flip<TA, TB, TC>(Func<TA, TB, TC> f)
+        {
+            return (a, b) => f(b, a);
         }
 
         private static void ParseCsvFixedColumnOrder()
@@ -79,7 +103,7 @@ namespace ParsersApp
             var p = new MyParserImpl();
             var dateParser = DateParser(p);
             var temperatureParser = TemperatureParser(p);
-            var rowParser = dateParser.Product(() => p.SkipL(p.Token(p.String(",")), () => temperatureParser)).Map(tuple => new Row(tuple.Item1, tuple.Item2));
+            var rowParser = p.Map2(dateParser, () => temperatureParser, Row.MakeRowFunc);
             var rowsParser = p.Whitespace().SkipL(() => rowParser.Sep(p.Whitespace()));
 
             const string input = @"
