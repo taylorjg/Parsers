@@ -111,6 +111,11 @@ namespace ParsersLib
             return Digits().Map(Convert.ToInt32);
         }
 
+        public Parser<string> NewLine()
+        {
+            return String(Environment.NewLine);
+        }
+
         public Parser<string> Eof()
         {
             return Label("unexpected trailing characters", R(@"^\z"));
