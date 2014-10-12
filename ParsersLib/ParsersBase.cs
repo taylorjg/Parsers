@@ -75,9 +75,14 @@ namespace ParsersLib
             return Map2(p1, () => Slice(p2Func()), (a, _) => a);
         }
 
-        public Parser<Maybe<TA>> Opt<TA>(Parser<TA> p)
+        public Parser<TA> Option<TA>(TA a, Parser<TA> p)
         {
-            return p.Map(Maybe.Just) | (() => Succeed(Maybe.Nothing<TA>()));
+            return p | (() => Succeed(a));
+        }
+
+        public Parser<Maybe<TA>> OptionMaybe<TA>(Parser<TA> p)
+        {
+            return Option(Maybe.Nothing<TA>(), p.Map(Maybe.Just));
         }
 
         public Parser<string> Whitespace()
@@ -107,11 +112,10 @@ namespace ParsersLib
 
         public Parser<int> Int()
         {
-            //return Token(Digits()).Map(Convert.ToInt32);
             return Digits().Map(Convert.ToInt32);
         }
 
-        public Parser<string> NewLine()
+        public Parser<string> Eol()
         {
             return String(Environment.NewLine);
         }
@@ -126,9 +130,9 @@ namespace ParsersLib
             return Map2(p1, () => Many(SkipL(p2, () => p1)), Cons);
         }
 
-        public Parser<IEnumerable<TA>> Sep<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        public Parser<IEnumerable<TA>> SepBy<TA, TB>(Parser<TA> p1, Parser<TB> p2)
         {
-            return p1.Sep1(p2) | (() => Succeed(Enumerable.Empty<TA>()));
+            return p1.SepBy1(p2) | (() => Succeed(Enumerable.Empty<TA>()));
         }
 
         public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop, Func<Parser<TA>> pFunc)

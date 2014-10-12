@@ -26,7 +26,7 @@ namespace ParsersApp
             Program.PrintResult(p.Run(p.Root(p.String("abc")), "abc"));
             Program.PrintResult(p.Run(p.Quoted(), "\"abc\""));
 
-            var intAndOptionalCommaParser = p.Int().SkipR(() => p.Opt(p.Token(p.String(","))));
+            var intAndOptionalCommaParser = p.Int().SkipR(() => p.OptionMaybe(p.Token(p.String(","))));
             Program.PrintResult(p.Run(intAndOptionalCommaParser, "10, 11, 12"));
             Program.PrintResult(p.Run(intAndOptionalCommaParser, "10"));
         }

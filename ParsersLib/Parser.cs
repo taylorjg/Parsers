@@ -84,10 +84,10 @@ namespace ParsersLib
 
         public Parser<IEnumerable<TA>> Sep<TB>(Parser<TB> p2)
         {
-            return _parsersBase.Sep(this, p2);
+            return _parsersBase.SepBy(this, p2);
         }
 
-        public Parser<IEnumerable<TA>> Sep1<TB>(Parser<TB> p2)
+        public Parser<IEnumerable<TA>> SepBy1<TB>(Parser<TB> p2)
         {
             return _parsersBase.Sep1(this, p2);
         }

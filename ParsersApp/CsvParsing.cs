@@ -18,7 +18,7 @@ namespace ParsersApp
 
         private static Parser<TA> AddOptionalCommaTokenSuffix<TA>(ParsersBase p, Parser<TA> thingParser)
         {
-            return thingParser.SkipR(() => p.Opt(p.Token(p.String(","))));
+            return thingParser.SkipR(() => p.OptionMaybe(p.Token(p.String(","))));
         }
 
         private static Parser<DateTime> DateParser(ParsersBase p, bool lastColumn)
@@ -103,7 +103,7 @@ namespace ParsersApp
             var dateParser = DateParser(p, false);
             var temperatureParser = TemperatureParser(p, true);
             var rowParser = p.Map2(dateParser, () => temperatureParser, Row.MakeRowFunc);
-            var rowsParser = p.Whitespace().SkipL(() => rowParser.Sep(p.NewLine()));
+            var rowsParser = p.Whitespace().SkipL(() => rowParser.Sep(p.Eol()));
 
             const string input = @"
 1/1/2010, 25
@@ -138,7 +138,7 @@ namespace ParsersApp
         private static void ParseCsvDynamically(string input)
         {
             var p = new MyParserImpl();
-            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.Sep(p.NewLine()));
+            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.Sep(p.Eol()));
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }
