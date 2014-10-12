@@ -125,24 +125,38 @@ namespace ParsersLib
             return Label("unexpected trailing characters", R(@"^\z"));
         }
 
-        public Parser<IEnumerable<TA>> SepBy1<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        public Parser<IEnumerable<TA>> SepBy1<TA, TB>(Parser<TA> p, Parser<TB> sep)
         {
-            return Map2(p1, () => Many(SkipL(p2, () => p1)), Cons);
+            return Map2(p, () => Many(SkipL(sep, () => p)), Cons);
         }
 
-        public Parser<IEnumerable<TA>> SepBy<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        public Parser<IEnumerable<TA>> SepBy<TA, TB>(Parser<TA> p, Parser<TB> sep)
         {
-            return p1.SepBy1(p2) | (() => Succeed(Enumerable.Empty<TA>()));
+            return p.SepBy1(sep) | (() => Succeed(Enumerable.Empty<TA>()));
         }
 
-        public Parser<IEnumerable<TA>> EndBy1<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        public Parser<IEnumerable<TA>> EndBy1<TA, TB>(Parser<TA> p, Parser<TB> sep)
         {
-            return Many1(p1.SkipR(() => p2));
+            return Many1(p.SkipR(() => sep));
         }
 
-        public Parser<IEnumerable<TA>> EndBy<TA, TB>(Parser<TA> p1, Parser<TB> p2)
+        public Parser<IEnumerable<TA>> EndBy<TA, TB>(Parser<TA> p, Parser<TB> sep)
         {
-            return Many(p1.SkipR(() => p2));
+            return Many(p.SkipR(() => sep));
+        }
+
+        public Parser<IEnumerable<TA>> SepEndBy1<TA, TB>(Parser<TA> p, Parser<TB> sep)
+        {
+            return p.Bind(x =>
+                {
+                    Func<Parser<IEnumerable<TA>>> func = () => p.SepEndBy(sep).Map(xs => Cons(x, xs));
+                    return sep.BindIgnoringLeft(func()) | (() => Parser.Return(Enumerable.Repeat(x, 1)));
+                });
+        }
+
+        public Parser<IEnumerable<TA>> SepEndBy<TA, TB>(Parser<TA> p, Parser<TB> sep)
+        {
+            return p.SepEndBy1(sep) | (() => Succeed(Enumerable.Empty<TA>()));
         }
 
         public Parser<TA> Surround<TA, TB>(Parser<TB> start, Parser<TB> stop, Func<Parser<TA>> pFunc)

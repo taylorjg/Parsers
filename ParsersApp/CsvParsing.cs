@@ -103,7 +103,7 @@ namespace ParsersApp
             var dateParser = DateParser(p, false);
             var temperatureParser = TemperatureParser(p, true);
             var rowParser = p.Map2(dateParser, () => temperatureParser, Row.MakeRowFunc);
-            var rowsParser = p.Whitespace().SkipL(() => rowParser.EndBy(p.Eol()));
+            var rowsParser = p.Whitespace().SkipL(() => rowParser.SepEndBy(p.Eol()));
 
             const string input = @"
 1/1/2010, 25
@@ -141,7 +141,7 @@ namespace ParsersApp
         private static void ParseCsvDynamically(string input)
         {
             var p = new MyParserImpl();
-            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.EndBy(p.Eol()));
+            var rowsParser = HeaderParser(p).Bind(rowParser => rowParser.SepEndBy(p.Eol()));
             var result = p.Run(rowsParser, input);
             Program.PrintResult(result, rows => string.Join(Environment.NewLine, rows.Select(row => row.ToString())));
         }
