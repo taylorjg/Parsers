@@ -82,14 +82,24 @@ namespace ParsersLib
             return _parsersBase.Token(this);
         }
 
-        public Parser<IEnumerable<TA>> Sep<TB>(Parser<TB> p2)
+        public Parser<IEnumerable<TA>> SepBy<TB>(Parser<TB> p2)
         {
             return _parsersBase.SepBy(this, p2);
         }
 
         public Parser<IEnumerable<TA>> SepBy1<TB>(Parser<TB> p2)
         {
-            return _parsersBase.Sep1(this, p2);
+            return _parsersBase.SepBy1(this, p2);
+        }
+
+        public Parser<IEnumerable<TA>> EndBy<TB>(Parser<TB> p2)
+        {
+            return _parsersBase.EndBy(this, p2);
+        }
+
+        public Parser<IEnumerable<TA>> EndBy1<TB>(Parser<TB> p2)
+        {
+            return _parsersBase.EndBy1(this, p2);
         }
 
         public Parser<TB> As<TB>(TB b)

@@ -41,7 +41,7 @@ namespace ParsersApp
             return p.Surround(
                 p.Token(p.String("[")),
                 p.Token(p.String("]")),
-                () => JsonValue(p).Sep(p.Token(p.String(","))))
+                () => JsonValue(p).SepBy(p.Token(p.String(","))))
                     .Map(vs => new JArray(vs) as Json)
                     .Scope("array");
         }
@@ -51,7 +51,7 @@ namespace ParsersApp
             return p.Surround(
                 p.Token(p.String("{")),
                 p.Token(p.String("}")),
-                () => JsonKeyValue(p).Sep(p.Token(p.String(",")))
+                () => JsonKeyValue(p).SepBy(p.Token(p.String(",")))
                                      .Map(kvs => new JObject(kvs.ToDictionary(kv => kv.Item1, kv => kv.Item2)) as Json))
                     .Scope("object");
         }
