@@ -166,6 +166,23 @@ namespace ParsersLib
                     () => stop));
         }
 
+        public Parser<string> Surround(string start, string stop)
+        {
+            var stopLength = stop.Length;
+            return String(start).SkipL(() => Thru(stop)).Map(s => s.Substring(0, s.Length - stopLength));
+        }
+
+        public Parser<string> Surround(string delim)
+        {
+            return Surround(delim, delim);
+        }
+
+        public Parser<string> Surround(char delim)
+        {
+            var delimString = new string(delim, 1);
+            return Surround(delimString, delimString);
+        }
+
         public Parser<string> Thru(string s)
         {
             return R(@".*?" + System.Text.RegularExpressions.Regex.Escape(s));
@@ -173,7 +190,7 @@ namespace ParsersLib
 
         public Parser<string> Quoted()
         {
-            return String("\"").SkipL(() => Thru("\"")).Map(s => s.Substring(0, s.Length - 1));
+            return Surround('"');
         }
 
         public Parser<TB> As<TA, TB>(Parser<TA> p, TB b)
