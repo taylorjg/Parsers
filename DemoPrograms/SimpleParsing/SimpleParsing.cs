@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using ParsersLib;
 
-namespace ParsersApp
+namespace SimpleParsing
 {
     public static class SimpleParsing
     {

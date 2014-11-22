@@ -2,7 +2,7 @@
 using System.Linq;
 using ParsersLib;
 
-namespace ParsersApp
+namespace JsonParsing
 {
     public static class JsonParsing
     {

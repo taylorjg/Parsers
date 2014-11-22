@@ -5,7 +5,7 @@ using ParsersLib;
 
 // ReSharper disable ImplicitlyCapturedClosure
 
-namespace ParsersApp
+namespace CsvParsing
 {
     public static class CsvParsing
     {

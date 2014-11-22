@@ -2,16 +2,13 @@
 using MonadLib;
 using ParsersLib;
 
-namespace ParsersApp
+namespace CsvParsing
 {
     internal class Program
     {
         private static void Main()
         {
-            SimpleParsing.SimpleParsingDemo();
-            ContextSensitiveParsing.ContextSensitiveParsingDemo();
             CsvParsing.CsvParsingDemo();
-            JsonParsing.JsonParsingDemo();
         }
 
         public static void PrintResult<TA>(Either<ParseError, TA> result)

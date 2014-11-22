@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using ParsersLib;
 
-namespace ParsersApp
+namespace ContextSensitiveParsing
 {
     public static class ContextSensitiveParsing
     {

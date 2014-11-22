@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ParsersApp")]
+[assembly: AssemblyTitle("CsvParsing")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("ParsersApp")]
+[assembly: AssemblyProduct("CsvParsing")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("dacd9942-2bf2-4817-9b9f-7ef126514f59")]
+[assembly: Guid("a3ad31a4-a1d8-4865-aa70-2cca6da80783")]
 
 // Version information for an assembly consists of the following four values:
 //
