@@ -23,9 +23,9 @@ namespace ReaderAllAboutMonadsExample
         {
             return Name().Bind(
                 n => (Template(string.Empty) | (() => _p.Fail<Template>("template"))).Bind(
-                    t => End().Bind(
-                        // TODO: spaces
-                        _ => Parser.Return(new NamedTemplate(n, t)))));
+                    t => End().BindIgnoringLeft(
+                        _p.Whitespace().BindIgnoringLeft(
+                            Parser.Return(new NamedTemplate(n, t))))));
         }
 
         public Parser<string> Name()

@@ -127,6 +127,16 @@ namespace ParsersLib
             return _parsersBase.ListOfN(n, this);
         }
 
+        public Parser<char> NoneOf(string s)
+        {
+            return _parsersBase.NoneOf(s);
+        }
+
+        public Parser<Unit> NotFollowedBy<TB>(Parser<TB> p)
+        {
+            return _parsersBase.NotFollowedBy(p);
+        }
+
         private MonadAdapter _monadAdapter;
 
         public MonadAdapter GetMonadAdapter()

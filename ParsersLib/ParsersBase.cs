@@ -20,7 +20,8 @@ namespace ParsersLib
         public abstract Parser<TA> Or<TA>(Parser<TA> p1, Func<Parser<TA>> p2Func);
         public abstract Parser<TA> Label<TA>(string message, Parser<TA> p); 
         public abstract Parser<TA> Scope<TA>(string message, Parser<TA> p); 
-        public abstract Parser<TA> Attempt<TA>(Parser<TA> p); 
+        public abstract Parser<TA> Attempt<TA>(Parser<TA> p);
+        public abstract Parser<char> NoneOf(string s);
 
         // Combinators
         public Parser<char> Char(char c)
@@ -201,6 +202,12 @@ namespace ParsersLib
         public Parser<TA> Root<TA>(Parser<TA> p)
         {
             return p.SkipR(Eof);
+        }
+
+        public Parser<Unit> NotFollowedBy<TA>(Parser<TA> p)
+        {
+            return Attempt(p.Bind(
+                c => Fail<Unit>(string.Format("Expected not to be followed by {0}", c))) | (() => Succeed(new Unit())));
         }
 
         private static IEnumerable<T> Cons<T>(T x, IEnumerable<T> xs)

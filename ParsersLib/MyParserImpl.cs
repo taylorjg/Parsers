@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MonadLib;
 
@@ -19,19 +20,25 @@ namespace ParsersLib
                          : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s), false));
         }
 
+        public override Parser<char> NoneOf(string cs)
+        {
+            return new Parser<char>(this,
+                l => !cs.Contains(l.CurrentInput.First())
+                            ? new Success<char>(l.CurrentInput.First(), 1) as Result<char>
+                            : new Failure<char>(l.ToError(string.Format("Expected a char not in the set \"{0}\"", cs)), false));
+        }
+
         public override Parser<string> Regex(Regex r)
         {
             return new Parser<string>(this,
                 l =>
                     {
-                        //Console.WriteLine("Regex on entry - input: >-{0}-<", l.CurrentInput);
                         var match = r.Match(l.CurrentInput);
                         if (match.Success)
                         {
                             var a = match.Value;
                             return new Success<string>(a, a.Length);
                         }
-                        //Console.WriteLine("Regex on no match - input: >-{0}-<", l.CurrentInput);
                         return new Failure<string>(l.ToError("Expected input matching regular expression, '{0}'.", r), false);
                     });
         }

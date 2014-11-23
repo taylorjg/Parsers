@@ -25,6 +25,10 @@ namespace SimpleParsing
             Program.PrintResult(p.Run(p.Surround(p.Char('['), p.Char(']'), () => p.String("abc")), "[abc]"));
             Program.PrintResult(p.Run(p.Root(p.String("abc")), "abc"));
             Program.PrintResult(p.Run(p.Quoted(), "\"abc\""));
+            Program.PrintResult(p.Run(p.String("mouse ").Bind(s => p.NotFollowedBy(p.String("cat")).BindIgnoringLeft(p.Succeed(s))), "mouse dog"));
+            Program.PrintResult(p.Run(p.String("mouse ").Bind(s => p.NotFollowedBy(p.String("cat")).BindIgnoringLeft(p.Succeed(s))), "mouse cat"));
+            Program.PrintResult(p.Run(p.NoneOf("abc"), "x"));
+            Program.PrintResult(p.Run(p.NoneOf("abc"), "b"));
 
             var intAndOptionalCommaParser = p.Int().SkipR(() => p.OptionMaybe(p.Token(p.String(","))));
             Program.PrintResult(p.Run(intAndOptionalCommaParser, "10, 11, 12"));
