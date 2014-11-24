@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using MonadLib;
+using ParsersLib;
 
 namespace ReaderAllAboutMonadsExample
 {
     public class Program
     {
-        private static void Main()
-        {
-        }
-
         private static Maybe<string> LookupVar(string name, Environment env)
         {
             string v;
@@ -81,6 +78,59 @@ namespace ReaderAllAboutMonadsExample
             }
 
             throw new InvalidOperationException("Unknown Template type");
+        }
+
+        // parseFromFile :: Parser a -> String -> IO (Either ParseError a)
+        private static Either<ParseError, IEnumerable<NamedTemplate>> ParseFromFile(Parser<IEnumerable<NamedTemplate>> p, string filePath)
+        {
+            // http://hackage.haskell.org/package/parsec-3.1.2/docs/Text-Parsec-ByteString.html
+
+            // parseFromFile p filePath runs a strict bytestring parser p on the input read from
+            // filePath using readFile. Returns either a ParseError (Left) or a value of type a (Right).
+
+            return null;
+        }
+
+        // parse :: Stream s Identity t => Parsec s () a -> SourceName -> s -> Either ParseError a
+        private static Either<ParseError, TA> Parse<TA>(Parser<TA> p, string filePath, string s)
+        {
+            // http://hackage.haskell.org/package/parsec-3.0.0/docs/Text-Parsec-Prim.html
+
+            // parse p filePath input runs a parser p over Identity without user state. The filePath
+            // is only used in error messages and may be the empty string. Returns either a
+            // ParseError (Left) or a value of type a (Right).
+
+            return null;
+        }
+
+        // Read the command line arguments, parse the template file, the user template, and any
+        // variable definitions.  Then construct the environment and print the resolved user template.
+        private static void Main(string[] args)
+        {
+            // TODO: change Environment to use IImmutableList internally ?
+
+            var tmplFile = args[0];
+            var pattern = args[1];
+            var defs = args.Skip(2);
+
+            var templateParser = new TemplateParser(new MyParserImpl());
+            var nts = ParseFromFile(templateParser.TemplateFile(), tmplFile);
+            nts.Match(err => Console.Error.WriteLine(err), _ => { });
+
+            var tmpl = Parse(templateParser.Template(string.Empty), "pattern", pattern);
+            tmpl.Match(err => Console.Error.WriteLine(err), _ => { });
+
+            var ds = defs.Select(d =>
+                {
+                    var pos = d.IndexOf('=');
+                    return Tuple.Create(d.Substring(0, pos), d.Substring(pos + 1));
+                });
+            var ds2 = ds.ToDictionary(pair => pair.Item1, pair => pair.Item2);
+            var ntl = nts.MapEither(_ => Enumerable.Empty<NamedTemplate>(), x => x);
+            var env = new Environment(ntl.Select(nt => nt.StripName()).ToDictionary(pair => pair.Item1, pair => pair.Item2), ds2);
+            var t = tmpl.MapEither(_ => new TextTemplate(string.Empty), x => x);
+            var result = Resolve(t).RunReader(env);
+            Console.WriteLine(result);
         }
     }
 }
