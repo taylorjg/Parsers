@@ -127,6 +127,11 @@ namespace ParsersLib
             return _parsersBase.ListOfN(n, this);
         }
 
+        public Parser<char> OneOf(string s)
+        {
+            return _parsersBase.OneOf(s);
+        }
+
         public Parser<char> NoneOf(string s)
         {
             return _parsersBase.NoneOf(s);

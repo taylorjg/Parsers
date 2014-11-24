@@ -21,6 +21,7 @@ namespace ParsersLib
         public abstract Parser<TA> Label<TA>(string message, Parser<TA> p); 
         public abstract Parser<TA> Scope<TA>(string message, Parser<TA> p); 
         public abstract Parser<TA> Attempt<TA>(Parser<TA> p);
+        public abstract Parser<char> OneOf(string s);
         public abstract Parser<char> NoneOf(string s);
 
         // Combinators

@@ -20,6 +20,14 @@ namespace ParsersLib
                          : new Failure<string>(l.ToError("Expected input matching string, '{0}'.", s), false));
         }
 
+        public override Parser<char> OneOf(string cs)
+        {
+            return new Parser<char>(this,
+                l => cs.Contains(l.CurrentInput.First())
+                            ? new Success<char>(l.CurrentInput.First(), 1) as Result<char>
+                            : new Failure<char>(l.ToError(string.Format("Expected a char in the set \"{0}\"", cs)), false));
+        }
+
         public override Parser<char> NoneOf(string cs)
         {
             return new Parser<char>(this,
