@@ -63,24 +63,31 @@ namespace ReaderAllAboutMonadsExample
         {
             return _p.Attempt(_p.Char('$').Bind(
                 c => _p.NotFollowedBy(_p.OneOf("{<\"")).BindIgnoringLeft(
-                    Parser.Return(c))));
-            // <?> ""
+                    Parser.Return(c)))); // <?> ""
         }
 
-        // parserZero :: Monad m => ParsecT s u m aSource
+        // http://hackage.haskell.org/package/parsec-3.0.0/docs/Text-ParserCombinators-Parsec-Prim.html
+        // http://hackage.haskell.org/package/parsec-3.0.0/docs/src/Text-ParserCombinators-Parsec-Prim.html#pzero
+        // pzero :: GenParser tok st a
+        // pzero = parserZero
+        //
+        // http://hackage.haskell.org/package/parsec-3.0.0/docs/src/Text-Parsec-Prim.html#parserZero
+        // parserZero :: (Monad m) => ParsecT s u m a
+        // parserZero = ParsecT $ \s -> return $ Empty $ return $ Error (unknownError s)
+        //
         // parserZero always fails without consuming any input. parserZero is defined equal
         // to the mzero member of the MonadPlus class and to the Control.Applicative.empty
         // member of the Control.Applicative.Applicative class.
         //
-        // pzero :: GenParser tok st a
-        // pzero = parserZero
+        // http://hackage.haskell.org/package/parsec-3.0.0/docs/Text-Parsec-Prim.html
+        // http://hackage.haskell.org/package/parsec-3.0.0/docs/src/Text-Parsec-Prim.html#Consumed
+        // data Consumed a  = Consumed a | Empty !a
 
         public Parser<char> LeftBracket()
         {
+            // TODO: pzero instead of Fail ?
             return _p.Attempt((_p.Attempt(End()) | (() => _p.String("["))).Bind(
-                // TODO: pzero ???
-                s => s == "[END]" ? Parser.Return('0') : Parser.Return('[')));
-            // <?> ""
+                s => s == "[END]" ? _p.Fail<char>("") : Parser.Return('['))); // <?> ""
         }
 
         public Parser<char> TextChar(string except)

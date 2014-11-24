@@ -80,27 +80,16 @@ namespace ReaderAllAboutMonadsExample
             throw new InvalidOperationException("Unknown Template type");
         }
 
-        // parseFromFile :: Parser a -> String -> IO (Either ParseError a)
         private static Either<ParseError, IEnumerable<NamedTemplate>> ParseFromFile(Parser<IEnumerable<NamedTemplate>> p, string filePath)
         {
-            // http://hackage.haskell.org/package/parsec-3.1.2/docs/Text-Parsec-ByteString.html
-
-            // parseFromFile p filePath runs a strict bytestring parser p on the input read from
-            // filePath using readFile. Returns either a ParseError (Left) or a value of type a (Right).
-
-            return null;
+            var s = System.IO.File.ReadAllText(filePath);
+            return Parse(p, s);
         }
 
-        // parse :: Stream s Identity t => Parsec s () a -> SourceName -> s -> Either ParseError a
-        private static Either<ParseError, TA> Parse<TA>(Parser<TA> p, string filePath, string s)
+        private static Either<ParseError, TA> Parse<TA>(Parser<TA> p, string s)
         {
-            // http://hackage.haskell.org/package/parsec-3.0.0/docs/Text-Parsec-Prim.html
-
-            // parse p filePath input runs a parser p over Identity without user state. The filePath
-            // is only used in error messages and may be the empty string. Returns either a
-            // ParseError (Left) or a value of type a (Right).
-
-            return null;
+            var parserImpl = new MyParserImpl();
+            return parserImpl.Run(p, s);
         }
 
         // Read the command line arguments, parse the template file, the user template, and any
@@ -117,7 +106,7 @@ namespace ReaderAllAboutMonadsExample
             var nts = ParseFromFile(templateParser.TemplateFile(), tmplFile);
             nts.Match(err => Console.Error.WriteLine(err), _ => { });
 
-            var tmpl = Parse(templateParser.Template(string.Empty), "pattern", pattern);
+            var tmpl = Parse(templateParser.Template(string.Empty), pattern);
             tmpl.Match(err => Console.Error.WriteLine(err), _ => { });
 
             var ds = defs.Select(d =>

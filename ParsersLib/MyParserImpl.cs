@@ -23,17 +23,17 @@ namespace ParsersLib
         public override Parser<char> OneOf(string cs)
         {
             return new Parser<char>(this,
-                l => cs.Contains(l.CurrentInput.First())
+                l => l.CurrentInput.Length > 0 && cs.Contains(l.CurrentInput.First())
                             ? new Success<char>(l.CurrentInput.First(), 1) as Result<char>
-                            : new Failure<char>(l.ToError(string.Format("Expected a char in the set \"{0}\"", cs)), false));
+                            : new Failure<char>(l.ToError("Expected a char in the set '{0}'", cs), false));
         }
 
         public override Parser<char> NoneOf(string cs)
         {
             return new Parser<char>(this,
-                l => !cs.Contains(l.CurrentInput.First())
+                l => l.CurrentInput.Length > 0 && !cs.Contains(l.CurrentInput.First())
                             ? new Success<char>(l.CurrentInput.First(), 1) as Result<char>
-                            : new Failure<char>(l.ToError(string.Format("Expected a char not in the set \"{0}\"", cs)), false));
+                            : new Failure<char>(l.ToError("Expected a char not in the set '{0}'", cs), false));
         }
 
         public override Parser<string> Regex(Regex r)
@@ -65,7 +65,7 @@ namespace ParsersLib
 
         public override Parser<TA> Fail<TA>(string message)
         {
-            return new Parser<TA>(this, l => new Failure<TA>(l.ToError(message), false));
+            return new Parser<TA>(this, l => new Failure<TA>(l.ToError("{0}", message), false));
         }
 
         public override Parser<TB> FlatMap<TA, TB>(Parser<TA> p, Func<TA, Parser<TB>> f)
