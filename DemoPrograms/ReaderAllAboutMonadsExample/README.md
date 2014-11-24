@@ -1,7 +1,7 @@
 ## Links
 
 * https://www.haskell.org/haskellwiki/All_About_Monads#Example_7
-* https://github.com/dag/all-about-monads/blob/master/examples/example16.hs
+* https://raw.githubusercontent.com/dag/all-about-monads/master/examples/example16.hs
 
 ## Example of Reader monad in Haskell
 
