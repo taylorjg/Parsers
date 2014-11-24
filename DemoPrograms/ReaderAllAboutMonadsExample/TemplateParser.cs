@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using ParsersLib;
 
 namespace ReaderAllAboutMonadsExample
@@ -30,7 +31,11 @@ namespace ReaderAllAboutMonadsExample
 
         public Parser<string> Name()
         {
-            return null;
+            return _p.Surround(
+                _p.String("["),
+                _p.String("]"),
+                () => _p.Many1(_p.NoneOf("]")).Map(cs => new string(cs.ToArray()))) |
+                   (() => _p.Fail<string>("label"));
         }
 
         public Parser<string> End()
@@ -40,62 +45,93 @@ namespace ReaderAllAboutMonadsExample
 
         public Parser<Template> Template(string except)
         {
-            return null;
+            return _p.Many1(SimpleTemplate(except)).Map(ts => ts.ToList()).Bind(
+                ts => ts.Count == 1
+                          ? Parser.Return(ts.First())
+                          : Parser.Return(new CompoundTemplate(ts) as Template));
         }
 
         public Parser<Template> SimpleTemplate(string except)
         {
-            return null;
+            return Text(except) | 
+                   (() => _p.Attempt(Variable())) |
+                   (() => _p.Attempt(Quote())) |
+                   Include;
         }
 
         public Parser<char> Dollar()
         {
-            return null;
+            return _p.Attempt(_p.Char('$').Bind(
+                c => _p.NotFollowedBy(_p.OneOf("{<\"")).BindIgnoringLeft(
+                    Parser.Return(c))));
+            // <?> ""
         }
+
+        // parserZero :: Monad m => ParsecT s u m aSource
+        // parserZero always fails without consuming any input. parserZero is defined equal
+        // to the mzero member of the MonadPlus class and to the Control.Applicative.empty
+        // member of the Control.Applicative.Applicative class.
+        //
+        // pzero :: GenParser tok st a
+        // pzero = parserZero
 
         public Parser<char> LeftBracket()
         {
-            return null;
+            return _p.Attempt((_p.Attempt(End()) | (() => _p.String("["))).Bind(
+                // TODO: pzero ???
+                s => s == "[END]" ? Parser.Return('0') : Parser.Return('[')));
+            // <?> ""
         }
 
         public Parser<char> TextChar(string except)
         {
-            return null;
+            return _p.NoneOf("$[" + except) | Dollar | LeftBracket;
         }
 
         public Parser<Template> Text(string except)
         {
-            return null;
+            return _p.Many1(TextChar(except)).Map(cs => new string(cs.ToArray())).Bind(
+                str => Parser.Return(new TextTemplate(str) as Template)) | (() => _p.Fail<Template>("text"));
         }
 
         public Parser<Template> Variable()
         {
-            return null;
+            return _p.Surround(_p.String("${"), _p.String("}"), () => Template("}")).Bind(
+                t => Parser.Return(new VariableTemplate(t) as Template)) |
+                   (() => _p.Fail<Template>("variable pattern"));
         }
 
         public Parser<Template> Quote()
         {
-            return null;
+            return _p.Surround(_p.String("$\""), _p.String("\""), () => Template("\"")).Bind(
+                t => Parser.Return(new QuoteTemplate(t) as Template)) |
+                   (() => _p.Fail<Template>("quoted include pattern"));
         }
 
         public Parser<Template> Include()
         {
-            return null;
+            return _p.Surround(_p.String("$<"), _p.String(">"), IncludeBody) |
+                   (() => _p.Fail<Template>("include pattern"));
         }
 
         public Parser<Template> IncludeBody()
         {
-            return null;
+            return Template("|>").Bind(
+                t => _p.Option(Enumerable.Empty<Definition>(), Definitions()).Map(
+                    ds => ds.ToList()).Bind(
+                        ds => Parser.Return(new IncludeTemplate(t, ds) as Template)));
         }
 
         public Parser<IEnumerable<Definition>> Definitions()
         {
-            return null;
+            return _p.Char('|').BindIgnoringLeft(_p.SepBy(Definition(), _p.Char(',')));
         }
 
         public Parser<Definition> Definition()
         {
-            return null;
+            return Template("=,>").Bind(
+                t1 => _p.Char('=').BindIgnoringLeft(Template(",>")).Bind(
+                    t2 => Parser.Return(new Definition(t1, t2)))) | (() => _p.Fail<Definition>("variable definition"));
         }
     }
 }
